@@ -50,7 +50,9 @@ nav{max-width:1280px;margin:0 auto;padding:16px 32px;display:flex;flex-wrap:wrap
 .hero-text{flex:1 1 420px;min-width:0;display:flex;flex-direction:column;gap:28px}
 .hero-text .lead{max-width:480px;font-size:18px;color:var(--soft)}
 .hero-art{flex:1 1 480px;min-width:0}
-.hero-photo{display:none;width:100%;height:auto;margin-bottom:8px}
+.hero-img{background:#0f0f11}
+.hero-img img{display:block;width:100%;height:auto;max-width:1600px;margin:0 auto}
+.hero{padding-top:48px}
 .box{position:relative;width:100%;aspect-ratio:210/145;background:#141417;border:1px solid #26262C;box-shadow:0 40px 80px rgba(0,0,0,.55);container-type:inline-size;overflow:hidden}
 .foil{position:absolute;left:0;right:0;top:13%;display:flex;flex-direction:column;align-items:center;gap:2.2cqw;color:var(--metal)}
 .foil .n{font-family:var(--serif);font-size:11cqw;line-height:1;letter-spacing:.14em;padding-left:.14em}
@@ -112,8 +114,7 @@ footer .wrap{padding:56px 32px 40px;display:flex;flex-direction:column;gap:40px}
   .links{gap:0 18px;font-size:12px}
   .card{padding:32px 24px;justify-content:center}
   form.corp{padding:24px}
-  .hero-photo{display:block}
-  .hero{padding-top:24px}
+  .hero{padding-top:32px}
   .thumbs{grid-template-columns:minmax(0,1fr)}
 }
 </style>
@@ -134,23 +135,17 @@ footer .wrap{padding:56px 32px 40px;display:flex;flex-direction:column;gap:40px}
 </header>
 
 <main>
-<div class="wrap hero" id="top">
-<div class="hero-text">
-<img class="hero-photo" src="images/bottles-duo.jpg" alt="NOMĒ No.1 Black Birch and No.2 Amber Leaf" width="2400" height="1200">
+<div id="top" class="hero-img"><img src="images/hero-boxes.jpg" alt="The NOMĒ gift box closed with a personalised Eid band, and open showing No.1 Black Birch and No.2 Amber Leaf in black foam" width="2880" height="1440" fetchpriority="high"></div>
+<div class="wrap hero">
+<div class="hero-text" style="align-items:center;text-align:center;max-width:760px;margin:0 auto">
 <p class="eyebrow">The Day &amp; Night Collection</p>
 <h1>Two fragrances.<br>One story.</h1>
 <p class="lead">No.1 Black Birch for the day. No.2 Amber Leaf for the night. Two 100 ml Eaux de Parfum in one black gift box, finished with a band made for the person you're giving it to.</p>
-<div class="row" style="gap:14px;padding-top:8px">
+<div class="row" style="gap:14px;padding-top:8px;justify-content:center">
 <a class="btn btn-fill" href="#personalise">Personalise your box · 299 AED</a>
 <a class="btn btn-line" href="#corporate">Corporate gifting</a>
 </div>
 <p class="small" style="letter-spacing:.14em">2 × 100 ml Eau de Parfum · Made in the UAE · Delivered within 48 hours</p>
-</div>
-<div class="hero-art">
-<div class="box" role="img" aria-label="NOMĒ gift box with a personalised band">
-<div class="foil" aria-hidden="true"><div class="n">NOMĒ</div><div class="e">EAU DE PARFUM</div><div class="r"></div><div class="d">DAY &amp; NIGHT COLLECTION</div></div>
-<div class="band-slot" id="heroBand"></div>
-</div>
 </div>
 </div>
 
@@ -522,8 +517,7 @@ function draw() {
   const v = vals(), d = B.BY_ID[sel];
   const l1 = v.l1 || SAMPLE.line1, l2 = v.l2 || (v.l1 ? '' : SAMPLE.line2);
   $('preview').innerHTML = B.bandSVG(sel, l1, l2, 'front');
-  $('heroBand').innerHTML = B.bandSVG(sel, l1, l2, 'front');
-  B.fit($('preview')); B.fit($('heroBand'));
+  B.fit($('preview'));
   $('c1').textContent = `${v.l1.length}/26`; $('c2').textContent = `${v.l2.length}/38`;
   $('designName').textContent = 'Design: ' + d.name;
   document.querySelectorAll('.thumb').forEach(t => t.setAttribute('aria-pressed', t.dataset.id === sel));
