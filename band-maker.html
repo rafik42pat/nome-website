@@ -55,7 +55,7 @@ textarea{padding:10px 12px;min-height:110px}
 </div>
 
 <div class="card">
-<h2>2. Today's bands</h2>
+<h2>2. Bands and status</h2>
 <div id="list"></div>
 </div>
 
@@ -312,7 +312,9 @@ document.getElementById('fontfaces').textContent = B.fontCSS('fonts/');
 $('design').innerHTML = B.DESIGNS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
 const today = new Date().toISOString().slice(0, 10);
 $('batch').value = 'NOMĒ ' + today;
+const STATUSES = ['Received', 'Artwork ready', 'Sent to printer', 'Printed', 'Completed'];
 let orders = [];
+function nextNo() { const d = new Date().toISOString().slice(2, 10).replace(/-/g, ''); let n = 1; while (orders.some(o => o.no === `NB-${d}-${String(n).padStart(2, '0')}`)) n++; return `NB-${d}-${String(n).padStart(2, '0')}`; }
 try { orders = JSON.parse(localStorage.getItem('nome_orders') || '[]'); } catch (e) {}
 const save = () => { try { localStorage.setItem('nome_orders', JSON.stringify(orders)); } catch (e) {} };
 const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -322,11 +324,13 @@ function render() {
   $('list').innerHTML = orders.map((o, i) => `<div class="order">
     <div class="pv">${B.bandSVG(o.design, o.line1, o.line2, 'front')}</div>
     <div class="row" style="justify-content:space-between">
-      <span class="meta"><b>#${i + 1} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
+      <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
+      <select data-status="${i}" aria-label="Status for ${esc(o.no || '#' + (i + 1))}">${STATUSES.map(s => `<option${(o.status || 'Received') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
       <span class="row"><button class="btn line" data-up="${i}" type="button" aria-label="Move up">↑</button><button class="btn line" data-del="${i}" type="button">Remove</button></span>
     </div></div>`).join('');
   B.fit($('list'));
 }
+$('list').addEventListener('change', e => { const s = e.target.closest('[data-status]'); if (!s) return; orders[+s.dataset.status].status = s.value; save(); });
 $('list').addEventListener('click', e => {
   const d = e.target.closest('[data-del]'), u = e.target.closest('[data-up]');
   if (d) { orders.splice(+d.dataset.del, 1); save(); render(); }
@@ -343,11 +347,11 @@ $('addPaste').onclick = () => {
   const d = findDesign(get('Band'));
   if (!d) { $('pasteMsg').textContent = 'Could not find "Band:" in the message.'; return; }
   const clean = v => (v === '-' ? '' : v);
-  orders.push({ design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), qty: 1, ref: '' });
+  orders.push({ no: nextNo(), status: 'Received', design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), qty: 1, ref: '' });
   save(); render(); $('paste').value = ''; $('pasteMsg').textContent = 'Added: ' + d.name;
 };
 $('addManual').onclick = () => {
-  orders.push({ design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
+  orders.push({ no: nextNo(), status: 'Received', design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
   save(); render(); $('l1').value = $('l2').value = $('ref').value = ''; $('qty').value = 1;
 };
 $('clear').onclick = () => { if (orders.length && confirmClear()) { orders = []; save(); render(); } };
@@ -360,10 +364,11 @@ $('pdf').onclick = async () => {
   try {
     await document.fonts.ready;
     let n = 0;
-    const list = orders.map((o, i) => ({ ...o, label: `${$('batch').value} · #${i + 1} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
+    const list = orders.map((o, i) => ({ ...o, label: `${$('batch').value} · ${o.no || '#' + (i + 1)} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
     const pdf = await B.exportPDF(list, { fontBase: 'fonts/', dpi: 500, onProgress: p => { $('pdfMsg').textContent = `Making PDF… ${p} of ${total}`; } });
     pdf.save(`${$('batch').value.replace(/[^\w\-]+/g, '_')}_${total}_bands.pdf`);
-    $('pdfMsg').textContent = `Done: ${total} band${total > 1 ? 's' : ''}. Send the PDF to Desco.`;
+    orders.forEach(o => { if (!o.status || o.status === 'Received') o.status = 'Artwork ready'; }); save(); render();
+    $('pdfMsg').textContent = `Done: ${total} band${total > 1 ? 's' : ''}. Send the PDF to the printer, then set the status to "Sent to printer".`;
   } catch (e) { $('pdfMsg').textContent = 'Something went wrong: ' + e.message; }
   $('pdf').disabled = false;
 };
