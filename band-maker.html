@@ -25,7 +25,7 @@ textarea{padding:10px 12px;min-height:110px}
 .order{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
 .order .pv{aspect-ratio:210/40;width:100%}
 .order .pv svg{width:100%;height:100%;display:block}
-.order .cpv{aspect-ratio:148/105;width:min(100%,320px)}
+.order .cpv{aspect-ratio:105/148;width:min(100%,200px)}
 .order .cpv svg{width:100%;height:100%;display:block}
 .meta{font-size:14px;color:var(--muted)}
 .meta b{color:var(--text);font-weight:600}
@@ -40,8 +40,8 @@ textarea{padding:10px 12px;min-height:110px}
 
 <div class="card">
 <h2>1. Paste a WhatsApp order</h2>
-<label for="paste">Order message<textarea id="paste" placeholder="Band: Eid Mubarak&#10;Name: For Ahmed&#10;Message: With love from Sara&#10;Card: Your full message for the card (always last)"></textarea></label>
-<div class="row"><button class="btn" id="addPaste" type="button">Add from message</button><span class="status" id="pasteMsg"></span></div>
+<label for="paste">Order message<textarea id="paste" placeholder="Band: Eid Mubarak&#10;Name: Ahmed&#10;Message: With love from Sara&#10;From: With love, Your Family&#10;Card: Your full message for the card (always last)"></textarea></label>
+<div class="row"><button class="btn" id="addPastePdf" type="button">Add and download PDF</button><button class="btn line" id="addPaste" type="button">Add to list only</button><span class="status" id="pasteMsg"></span></div>
 </div>
 
 <div class="card">
@@ -52,6 +52,7 @@ textarea{padding:10px 12px;min-height:110px}
 <label for="l1">Name line<input id="l1" maxlength="26" placeholder="For Ahmed"></label>
 <label for="l2">Message<input id="l2" maxlength="38" placeholder="With love from Sara"></label>
 <label for="card" style="grid-column:1/-1">Message card (inside the box, optional)<textarea id="card" maxlength="300" placeholder="Full message for the A6 card"></textarea></label>
+<label for="sign" style="grid-column:1/-1">Card sign-off<input id="sign" maxlength="40" placeholder="With love, Your Family"></label>
 <label for="ref">Order ref / customer (not printed on the band)<input id="ref" placeholder="e.g. Sara, 0501234567"></label>
 </div>
 <div class="row"><button class="btn line" id="addManual" type="button">Add band</button></div>
@@ -72,7 +73,7 @@ textarea{padding:10px 12px;min-height:110px}
 </div>
 <p class="status" id="pdfMsg"></p>
 <p class="meta">Each band is one page: 554 × 66 mm with 3 mm bleed, crop marks and dashed fold marks outside the cut line. Print on 300 gsm card, matte lamination, cut to 528 × 40 mm, score the fold marks. The white flap on the left is the glue area.</p>
-<p class="meta">Orders with a message card get a second page straight after the band: 148 × 105 mm (A6) with 3 mm bleed and crop marks. Print on 350 gsm card, matte, cut to 148 × 105 mm.</p>
+<p class="meta">Orders with a message card get a second page straight after the band: 105 × 148 mm (A6 portrait) with 3 mm bleed and crop marks. Print on 350 gsm white card, matte, cut to 105 × 148 mm (A6 portrait).</p>
 </div>
 </div>
 
@@ -95,11 +96,11 @@ function render() {
   if (!orders.length) { $('list').innerHTML = '<p class="empty">No bands yet.</p>'; return; }
   $('list').innerHTML = orders.map((o, i) => `<div class="order">
     <div class="pv">${B.bandSVG(o.design, o.line1, o.line2, 'front')}</div>
-    ${o.card ? `<div class="cpv">${B.cardSVG(o.line1, o.card, 'front', $('ctheme').value)}</div>` : ''}
+    ${o.card ? `<div class="cpv">${B.cardSVG(o.line1, o.card, 'front', $('ctheme').value, o.sign)}</div>` : ''}
     <div class="row" style="justify-content:space-between">
       <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.card ? ' · + card' : ''}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
       <select data-status="${i}" aria-label="Status for ${esc(o.no || '#' + (i + 1))}">${STATUSES.map(s => `<option${(o.status || 'Received') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
-      <span class="row"><button class="btn line" data-up="${i}" type="button" aria-label="Move up">↑</button><button class="btn line" data-del="${i}" type="button">Remove</button></span>
+      <span class="row"><button class="btn line" data-pdf="${i}" type="button">PDF</button><button class="btn line" data-up="${i}" type="button" aria-label="Move up">↑</button><button class="btn line" data-del="${i}" type="button">Remove</button></span>
     </div></div>`).join('');
   B.fit($('list'));
 }
@@ -107,7 +108,8 @@ try { $('ctheme').value = localStorage.getItem('nome_card_theme') || 'white'; } 
 $('ctheme').addEventListener('change', () => { try { localStorage.setItem('nome_card_theme', $('ctheme').value); } catch (e) {} render(); });
 $('list').addEventListener('change', e => { const s = e.target.closest('[data-status]'); if (!s) return; orders[+s.dataset.status].status = s.value; save(); });
 $('list').addEventListener('click', e => {
-  const d = e.target.closest('[data-del]'), u = e.target.closest('[data-up]');
+  const d = e.target.closest('[data-del]'), u = e.target.closest('[data-up]'), pp = e.target.closest('[data-pdf]');
+  if (pp) { makePDF([+pp.dataset.pdf]); return; }
   if (d) { orders.splice(+d.dataset.del, 1); save(); render(); }
   if (u && +u.dataset.up > 0) { const i = +u.dataset.up; [orders[i - 1], orders[i]] = [orders[i], orders[i - 1]]; save(); render(); }
 });
@@ -116,38 +118,44 @@ function findDesign(name) {
   return B.DESIGNS.find(d => d.name.toLowerCase().replace(/[’']/g, '') === n) ||
          B.DESIGNS.find(d => n && d.name.toLowerCase().replace(/[’']/g, '').startsWith(n.slice(0, 5)));
 }
-$('addPaste').onclick = () => {
+function addFromPaste() {
   const t = $('paste').value;
   const get = k => { const m = t.match(new RegExp('^\\s*' + k + '\\s*:\\s*(.*)$', 'mi')); return m ? m[1].trim() : ''; };
   const d = findDesign(get('Band'));
   if (!d) { $('pasteMsg').textContent = 'Could not find "Band:" in the message.'; return; }
   const clean = v => (v === '-' ? '' : v);
   const cm = t.match(/^\s*Card\s*:\s*([\s\S]*)$/mi), card = cm ? clean(cm[1].trim()).slice(0, 300) : '';
-  orders.push({ no: nextNo(), status: 'Received', design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), card, qty: 1, ref: '' });
+  orders.push({ no: nextNo(), status: 'Received', design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), sign: clean(get('From')).slice(0, 40), card, qty: 1, ref: '' });
   save(); render(); $('paste').value = ''; $('pasteMsg').textContent = 'Added: ' + d.name;
-};
+  return orders.length - 1;
+}
+$('addPaste').onclick = () => { addFromPaste(); };
+$('addPastePdf').onclick = () => { const i = addFromPaste(); if (i !== undefined) makePDF([i]); };
 $('addManual').onclick = () => {
-  orders.push({ no: nextNo(), status: 'Received', design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), card: $('card').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
-  save(); render(); $('l1').value = $('l2').value = $('ref').value = $('card').value = ''; $('qty').value = 1;
+  orders.push({ no: nextNo(), status: 'Received', design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), card: $('card').value.trim(), sign: $('sign').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
+  save(); render(); $('l1').value = $('l2').value = $('ref').value = $('card').value = $('sign').value = ''; $('qty').value = 1;
 };
 $('clear').onclick = () => { if (orders.length && confirmClear()) { orders = []; save(); render(); } };
 function confirmClear() { $('clear').textContent = 'Tap again to clear'; if ($('clear').dataset.armed) { delete $('clear').dataset.armed; $('clear').textContent = 'Clear all'; return true; } $('clear').dataset.armed = 1; setTimeout(() => { delete $('clear').dataset.armed; $('clear').textContent = 'Clear all'; }, 3000); return false; }
 
-$('pdf').onclick = async () => {
-  if (!orders.length) { $('pdfMsg').textContent = 'Add at least one band first.'; return; }
-  const total = orders.reduce((a, o) => a + (o.qty || 1) * (o.card ? 2 : 1), 0);
+async function makePDF(idx) {
+  const sel = idx ? idx.map(i => orders[i]) : orders;
+  if (!sel.length) { $('pdfMsg').textContent = 'Add at least one band first.'; return; }
+  const total = sel.reduce((a, o) => a + (o.qty || 1) * (o.card ? 2 : 1), 0);
   $('pdf').disabled = true; $('pdfMsg').textContent = 'Making PDF…';
   try {
     await document.fonts.ready;
-    let n = 0;
-    const list = orders.map((o, i) => ({ ...o, cardName: o.line1, label: `${$('batch').value} · ${o.no || '#' + (i + 1)} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
+    const list = sel.map(o => ({ ...o, cardName: o.line1, cardSign: o.sign || '', label: `${$('batch').value} · ${o.no} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
     const pdf = await B.exportPDF(list, { fontBase: 'fonts/', dpi: 500, cardTheme: $('ctheme').value, onProgress: p => { $('pdfMsg').textContent = `Making PDF… ${p} of ${total}`; } });
-    pdf.save(`${$('batch').value.replace(/[^\w\-]+/g, '_')}_${total}_pages.pdf`);
-    orders.forEach(o => { if (!o.status || o.status === 'Received') o.status = 'Artwork ready'; }); save(); render();
-    $('pdfMsg').textContent = `Done: ${total} page${total > 1 ? 's' : ''} (bands and cards). Send the PDF to the printer, then set the status to "Sent to printer".`;
+    const name = sel.length === 1 ? `${sel[0].no}_${(sel[0].line1 || 'order').replace(/[^\w\-]+/g, '_')}` : `${$('batch').value.replace(/[^\w\-]+/g, '_')}_${total}_pages`;
+    pdf.save(name + '.pdf');
+    sel.forEach(o => { if (!o.status || o.status === 'Received') o.status = 'Artwork ready'; }); save(); render();
+    $('pdfMsg').textContent = `Done: ${total} page${total > 1 ? 's' : ''} (band${sel.some(o => o.card) ? ' + card' : ''}). Send the PDF to the printer, then set the status to "Sent to printer".`;
+    $('pdfMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (e) { $('pdfMsg').textContent = 'Something went wrong: ' + e.message; }
   $('pdf').disabled = false;
-};
+}
+$('pdf').onclick = () => makePDF();
 render();
 document.fonts.ready.then(render);
 </script>

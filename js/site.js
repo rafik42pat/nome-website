@@ -43,13 +43,13 @@
       let url = C.partner.url;
       const g = giftDetails();
       if (kind === 'gift' && g && C.partner.passesPersonalisation) {
-        const u = new URL(url); u.searchParams.set('occasion', g.design); if (g.name) u.searchParams.set('name', g.name); if (g.message) u.searchParams.set('message', g.message); if (g.card) u.searchParams.set('card', g.card); url = u.toString();
+        const u = new URL(url); u.searchParams.set('occasion', g.design); if (g.name) u.searchParams.set('name', g.name); if (g.message) u.searchParams.set('message', g.message); if (g.card) u.searchParams.set('card', g.card); if (g.card && g.sign) u.searchParams.set('signoff', g.sign); url = u.toString();
       }
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
     } else {
       a.textContent = 'Register your interest';
       const g = kind === 'gift' ? giftDetails() : null;
-      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nCard: ${g.card || '-'}`
+      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`
                   : 'Hi NOMĒ, please let me know when the Day & Night gift box is available.';
       a.href = wa(t); a.target = '_blank'; a.rel = 'noopener';
     }
