@@ -175,8 +175,8 @@
   }
 
 
-  /* ---------- message card (A6 portrait 105 x 148 mm, sits on top of the bottles) ---------- */
-  const CW = 105, CH = 148, CWB = CW + 2 * BLEED, CHB = CH + 2 * BLEED, CSW = CWB + 2 * SLUG, CSH = CHB + 2 * SLUG;
+  /* ---------- message card (A6 landscape 148 x 105 mm, lies on top of the bottles, reads with the lid) ---------- */
+  const CW = 148, CH = 105, CWB = CW + 2 * BLEED, CHB = CH + 2 * BLEED, CSW = CWB + 2 * SLUG, CSH = CHB + 2 * SLUG;
   let mctx;
   function measure(text, font) { mctx = mctx || document.createElement('canvas').getContext('2d'); mctx.font = font; return mctx.measureText(text).width; }
   function wrap(text, size, maxW) {
@@ -214,23 +214,23 @@
     s += `<rect x="${B + 5}" y="${B + 5}" width="${CW - 10}" height="${CH - 10}" fill="none" stroke="${T.frame}" stroke-width=".3"/>`;
     // waves, bottom right
     const wx = B + CW - 5, wy = B + CH - 5;
-    for (let k = 0; k < 3; k++) { const o = k * 3.2; s += `<path d="M${f2(wx - 30 - o)} ${f2(wy)} C ${f2(wx - 18 - o)} ${f2(wy - 4 - o)}, ${f2(wx - 14)} ${f2(wy - 14 - o)}, ${f2(wx)} ${f2(wy - 24 - o)}" fill="none" stroke="${T.frame}" stroke-width=".22"/>`; }
-    s += `<text x="${cx}" y="${B + 22}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="8" letter-spacing="1.6" fill="${T.ink}">NOMĒ</text>`;
-    s += `<line x1="${cx - 4.5}" y1="${B + 30}" x2="${cx + 4.5}" y2="${B + 30}" stroke="${T.ink}" stroke-width=".3"/>`;
+    for (let k = 0; k < 3; k++) { const o = k * 3.2; s += `<path d="M${f2(wx - 34 - o)} ${f2(wy)} C ${f2(wx - 20 - o)} ${f2(wy - 4 - o)}, ${f2(wx - 15)} ${f2(wy - 13 - o)}, ${f2(wx)} ${f2(wy - 22 - o)}" fill="none" stroke="${T.frame}" stroke-width=".22"/>`; }
+    s += `<text x="${cx}" y="${B + 17}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="7" letter-spacing="1.5" fill="${T.ink}">NOMĒ</text>`;
+    s += `<line x1="${cx - 4.5}" y1="${B + 23}" x2="${cx + 4.5}" y2="${B + 23}" stroke="${T.ink}" stroke-width=".3"/>`;
     const g = greeting(name), sl = signLines(sign);
-    const areaTop = B + 38, areaBot = B + CH - 14;
-    let size = 5.4, lines, total;
-    const measureBlock = () => { lines = wrap(message, size, 80); const lh = size * 1.42; total = (g ? 5.6 + 8 : 0) + lines.length * lh + (sl.length ? 8 + 9 + sl.length * 7 : 0); };
+    const areaTop = B + 28, areaBot = B + CH - 10;
+    let size = 5, lines, total;
+    const measureBlock = () => { lines = wrap(message, size, 112); const lh = size * 1.4; total = (g ? 5.2 + 6 : 0) + lines.length * lh + (sl.length ? 5 + 7 + sl.length * 6.2 : 0); };
     measureBlock();
     while (size > 3.2 && total > areaBot - areaTop) { size -= .2; measureBlock(); }
-    const lh = size * 1.42;
+    const lh = size * 1.4;
     let y = areaTop + Math.max(0, (areaBot - areaTop - total) / 2);
-    if (g) { s += it(y + 5.6 * .8, g, 5.6, T.ink, 84); y += 5.6 + 8; }
+    if (g) { s += it(y + 5.2 * .8, g, 5.2, T.ink, 120); y += 5.2 + 6; }
     lines.forEach((l, i) => { s += it(y + size * .8 + i * lh, l, size, T.ink); });
     y += lines.length * lh;
     if (sl.length) {
-      y += 6; s += `<line x1="${cx - 4.5}" y1="${f2(y)}" x2="${cx + 4.5}" y2="${f2(y)}" stroke="${T.ink}" stroke-width=".3"/>`; y += 9;
-      sl.forEach((l, i) => { s += it(y + 5.2 * .8 + i * 7, l, 5.2, T.ink, 84); });
+      y += 4; s += `<line x1="${cx - 4.5}" y1="${f2(y)}" x2="${cx + 4.5}" y2="${f2(y)}" stroke="${T.ink}" stroke-width=".3"/>`; y += 7;
+      sl.forEach((l, i) => { s += it(y + 4.8 * .8 + i * 6.2, l, 4.8, T.ink, 120); });
     }
     return s;
   }
@@ -244,7 +244,7 @@
     const ln = (a, b, c, d2) => `<line x1="${f2(a)}" y1="${f2(b)}" x2="${f2(c)}" y2="${f2(d2)}" stroke="#000" stroke-width=".2"/>`;
     for (const [x, y, dx, dy] of [[t0x, t0y, -1, -1], [t1x, t0y, 1, -1], [t0x, t1y, -1, 1], [t1x, t1y, 1, 1]]) m += ln(x, y + dy * 4, x, y + dy * 9) + ln(x + dx * 4, y, x + dx * 9, y);
     m += `<text x="${t0x}" y="${SLUG - 4.5}" font-family="'OS', sans-serif" font-size="2.2" fill="#000">${esc(label)}</text>`;
-    m += `<text x="${t1x}" y="${CSH - 3}" text-anchor="end" font-family="'OS', sans-serif" font-size="1.9" fill="#000">Message card · 105 × 148 mm (A6) trim · 3 mm bleed · 350 gsm white · matte</text>`;
+    m += `<text x="${t1x}" y="${CSH - 3}" text-anchor="end" font-family="'OS', sans-serif" font-size="1.9" fill="#000">Message card · 148 × 105 mm (A6 landscape) trim · 3 mm bleed · 350 gsm white · matte</text>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${CSW}mm" height="${CSH}mm" viewBox="0 0 ${CSW} ${CSH}">${fontStyle ? `<style>${fontStyle}</style>` : ''}<rect width="${CSW}" height="${CSH}" fill="#fff"/><svg x="${SLUG}" y="${SLUG}" width="${CWB}" height="${CHB}" viewBox="0 0 ${CWB} ${CHB}">${cardInner(name, message, theme, sign)}</svg>${m}</svg>`;
   }
 
@@ -300,7 +300,7 @@
           holder.innerHTML = cardSheetSVG(o.cardName || '', o.card, (o.label || '') + ' · message card', css, o.cardTheme || opts.cardTheme, o.cardSign || '');
           const ce = holder.firstElementChild; fit(ce);
           const cc = await sheetToCanvas(ce, Math.min(dpi, 400), CSW, CSH);
-          pdf.addPage([CSW, CSH], 'portrait');
+          pdf.addPage([CSW, CSH], 'landscape');
           pdf.addImage(cc.toDataURL('image/jpeg', .94), 'JPEG', 0, 0, CSW, CSH, undefined, 'FAST'); page++;
         }
       }
