@@ -20,7 +20,7 @@
 {"@context":"https://schema.org","@type":"Product","name":"NOMĒ Day & Night Collection",
 "description":"Two 100 ml Eau de Parfum fragrances, No.1 Black Birch and No.2 Amber Leaf, in a premium black gift box with a personalised occasion band.",
 "brand":{"@type":"Brand","name":"NOMĒ"},
-"image":["https://nomeparfum.com/images/hero-boxes.jpg","https://nomeparfum.com/images/no1-black-birch.jpg","https://nomeparfum.com/images/no2-amber-leaf.jpg"]}
+"image":["https://nomeparfum.com/images/hero-boxes.jpg","https://nomeparfum.com/images/real-angle.jpg","https://nomeparfum.com/images/no1-black-birch.jpg","https://nomeparfum.com/images/no2-amber-leaf.jpg"]}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Organization","name":"NOMĒ","url":"https://nomeparfum.com","email":"info@nomeparfum.com"}
@@ -90,6 +90,8 @@
 <div><b>02</b><span class="body">One 100ml No.2 Amber Leaf Eau de Parfum</span></div>
 <div><b>03</b><span class="body">Premium NOMĒ presentation box</span></div>
 <div><b>04</b><span class="body">Occasion band, personalised with their name and your message</span></div>
+<div><b>05</b><span class="body">Message card inside, printed with your full message</span></div>
+<div><b>06</b><span class="body">Sealed with the NOMĒ seal, opened only by them</span></div>
 </div>
 </div>
 </div>
@@ -100,7 +102,7 @@
 <div class="stack" style="gap:14px;max-width:720px">
 <p class="eyebrow">Personalise the gift</p>
 <h2>Choose the occasion. Add their name.</h2>
-<p class="body">See exactly how the band will look on the box. Pick a design, add the recipient's name and your message.</p>
+<p class="body">See exactly how the band will look on the box. Pick a design, add the recipient's name and a short message for the band, then write your full message for the card inside.</p>
 </div>
 <div class="pers">
 <div class="pers-left">
@@ -112,6 +114,8 @@
 <label for="rname"><span class="lbl"><span>Recipient's name</span><span id="c1"></span></span><input id="rname" autocomplete="off" placeholder="Ahmed" dir="auto"></label>
 <label for="rmsg"><span class="lbl"><span>Your personal message (optional)</span><span id="c2"></span></span><input id="rmsg" autocomplete="off" placeholder="With love, from your family" dir="auto"></label>
 <p class="hint">English or Arabic. Long names shrink to fit the band.</p>
+<label for="rcard"><span class="lbl"><span>Message card inside the box (optional)</span><span id="c3"></span></span><textarea id="rcard" rows="4" placeholder="Write your full message. It is printed on a card that sits on top of the fragrances, under the seal." dir="auto"></textarea></label>
+<div class="stack" style="gap:8px"><p class="eyebrow" style="font-size:12px">Card preview</p><div class="cardpv" id="cardPv" role="img" aria-label="Preview of the message card"></div></div>
 <div class="stack" style="gap:10px">
 <a class="btn btn-fill" data-cta="gift" data-placement="personalise" href="#personalise" style="min-height:56px">Register your interest</a>
 <p class="hint" data-partner-note></p>
@@ -129,14 +133,33 @@
 <div class="box" style="clear:both"><div class="foil" aria-hidden="true"><div class="n">NOMĒ</div><div class="e">EAU DE PARFUM</div><div class="r"></div><div class="d">DAY &amp; NIGHT COLLECTION</div></div><div class="band-slot" id="bigBand"></div></div>
 </dialog>
 
-<section id="uae" class="alt">
+<section id="real" class="alt">
+<div class="wrap stack" style="gap:40px">
+<div class="stack" style="gap:14px;max-width:720px">
+<p class="eyebrow">The gift box</p>
+<h2>Sealed, wrapped and ready to give.</h2>
+</div>
+<div class="gal">
+<img src="images/real-angle.jpg" alt="The NOMĒ gift box with a With Love band, beside an open box showing No.1 Black Birch and No.2 Amber Leaf" width="2000" height="1195" loading="lazy">
+<img src="images/real-band.jpg" alt="NOMĒ gift box with a burgundy With Love band next to the open drawer with both fragrances" width="1100" height="1412" loading="lazy">
+</div>
+<div class="features">
+<div class="feature"><span>01</span><h3>Slide-out drawer</h3><p class="body">A matte black box with silver foil and a ribbon pull.</p></div>
+<div class="feature"><span>02</span><h3>Their band</h3><p class="body">The band wraps the box and holds the drawer closed.</p></div>
+<div class="feature"><span>03</span><h3>The NOMĒ seal</h3><p class="body">A seal fixes the band in place. Only the recipient breaks it.</p></div>
+<div class="feature"><span>04</span><h3>Your card</h3><p class="body">Your full message is waiting on top of the fragrances.</p></div>
+</div>
+</div>
+</section>
+
+<section id="uae">
 <div class="wrap row" style="gap:56px;align-items:center">
 <div class="stack" style="flex:1 1 380px;min-width:0;gap:18px">
 <p class="eyebrow">Crafted in the UAE</p>
 <h2>Made to make the moment.</h2>
 <p class="body">NOMĒ brings together distinctive fragrances, considered design and premium gift presentation. Our Day &amp; Night Collection is crafted in the UAE and created to make every gifting occasion memorable.</p>
 </div>
-<img src="images/gift-box.jpg" alt="NOMĒ gift box with Eid Mubarak band" width="1800" height="1200" loading="lazy" style="flex:1 1 460px;min-width:0;height:auto;border:1px solid var(--line)">
+<img src="images/real-top.jpg" alt="NOMĒ gift box with a With Love band in front of the open box with both fragrances" width="2000" height="1195" loading="lazy" style="flex:1 1 460px;min-width:0;height:auto">
 </div>
 </section>
 
@@ -175,15 +198,17 @@
 (function () {
   const B = NOME_BANDS, C = window.NOME_CONFIG, $ = id => document.getElementById(id);
   document.head.insertAdjacentHTML('beforeend', '<style>' + B.fontCSS('fonts/') + '</style>');
-  $('rname').maxLength = C.nameMax; $('rmsg').maxLength = C.messageMax;
+  $('rname').maxLength = C.nameMax; $('rmsg').maxLength = C.messageMax; $('rcard').maxLength = C.cardMax || 300;
   let sel = 'eid', started = false, completed = false;
-  const v = () => ({ name: $('rname').value.trim(), message: $('rmsg').value.trim() });
+  const v = () => ({ name: $('rname').value.trim(), message: $('rmsg').value.trim(), card: $('rcard').value.trim() });
   window.nomeGift = () => ({ design: sel, designName: B.BY_ID[sel].name, ...v() });
   function draw() {
     const g = v(), shownName = g.name || 'Ahmed', shownMsg = g.message || (g.name ? '' : 'With love, from your family');
     const svg = B.bandSVG(sel, shownName, shownMsg, 'front');
     $('boxBand').innerHTML = svg; B.fit($('boxBand'));
     if ($('bigView').open) { $('bigBand').innerHTML = svg; B.fit($('bigBand')); }
+    $('cardPv').innerHTML = B.cardSVG(g.name || 'Ahmed', g.card || 'Wishing you every happiness. One fragrance for your days, one for your nights. With love, Sara', 'front'); B.fit($('cardPv'));
+    $('c3').textContent = `${g.card.length}/${C.cardMax || 300}`;
     $('c1').textContent = `${g.name.length}/${C.nameMax}`; $('c2').textContent = `${g.message.length}/${C.messageMax}`;
     $('designName').textContent = 'Occasion: ' + B.BY_ID[sel].name;
     document.querySelectorAll('.thumb').forEach(t => t.setAttribute('aria-pressed', t.dataset.id === sel));
@@ -191,7 +216,7 @@
   }
   $('thumbs').innerHTML = B.DESIGNS.map(d => `<button type="button" class="thumb" data-id="${d.id}" aria-pressed="false"><span class="tb">${B.bandSVG(d.id, '', '', 'front')}</span>${d.name}</button>`).join('');
   $('thumbs').addEventListener('click', e => { const t = e.target.closest('.thumb'); if (!t) return; sel = t.dataset.id; nomeTrack('band_design_select', { design: sel }); draw(); });
-  ['rname', 'rmsg'].forEach(id => $(id).addEventListener('input', () => {
+  ['rname', 'rmsg', 'rcard'].forEach(id => $(id).addEventListener('input', () => {
     if (!started) { started = true; nomeTrack('personalisation_start', { design: sel }); }
     draw();
   }));

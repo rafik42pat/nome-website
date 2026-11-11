@@ -43,13 +43,13 @@
       let url = C.partner.url;
       const g = giftDetails();
       if (kind === 'gift' && g && C.partner.passesPersonalisation) {
-        const u = new URL(url); u.searchParams.set('occasion', g.design); if (g.name) u.searchParams.set('name', g.name); if (g.message) u.searchParams.set('message', g.message); url = u.toString();
+        const u = new URL(url); u.searchParams.set('occasion', g.design); if (g.name) u.searchParams.set('name', g.name); if (g.message) u.searchParams.set('message', g.message); if (g.card) u.searchParams.set('card', g.card); url = u.toString();
       }
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
     } else {
       a.textContent = 'Register your interest';
       const g = kind === 'gift' ? giftDetails() : null;
-      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}`
+      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nCard: ${g.card || '-'}`
                   : 'Hi NOMĒ, please let me know when the Day & Night gift box is available.';
       a.href = wa(t); a.target = '_blank'; a.rel = 'noopener';
     }
@@ -64,8 +64,8 @@
   $$('[data-rrp]').forEach(el => el.textContent = `${C.currency} ${C.rrp}`);
   $$('[data-partner-note]').forEach(el => {
     if (partnerLive) el.textContent = C.partner.passesPersonalisation
-      ? `Your chosen band, name and message will be sent to ${C.partner.name} with your order.`
-      : `You'll enter your band choice, name and message on ${C.partner.name}'s website when you order.`;
+      ? `Your chosen band, name, message and card will be sent to ${C.partner.name} with your order.`
+      : `You'll enter your band choice, name, message and card on ${C.partner.name}'s website when you order.`;
     else el.textContent = 'NOMĒ is launching soon through our exclusive gifting partner. Register your interest and we will let you know first.';
   });
   $$('[data-partner-name]').forEach(el => el.textContent = partnerLive ? C.partner.name : 'our exclusive gifting partner');

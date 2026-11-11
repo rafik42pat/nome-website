@@ -39,6 +39,7 @@ window.NOME_CONFIG = {
   /* PERSONALISATION LIMITS (fit the band's printing space) */
   nameMax: 26,
   messageMax: 38,
+  cardMax: 300,                     // message card inside the box
 
   /* ANALYTICS — loaded only after the visitor accepts cookies */
   ga4: '',                          // e.g. 'G-XXXXXXXXXX'
