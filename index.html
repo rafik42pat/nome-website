@@ -207,7 +207,7 @@
     const svg = B.bandSVG(sel, shownName, shownMsg, 'front');
     $('boxBand').innerHTML = svg; B.fit($('boxBand'));
     if ($('bigView').open) { $('bigBand').innerHTML = svg; B.fit($('bigBand')); }
-    $('cardPv').innerHTML = B.cardSVG(g.name || 'Ahmed', g.card || 'Wishing you every happiness. One fragrance for your days, one for your nights. With love, Sara', 'front'); B.fit($('cardPv'));
+    $('cardPv').innerHTML = B.cardSVG(g.name || 'Ahmed', g.card || 'Wishing you every happiness. One fragrance for your days, one for your nights. With love, Sara', 'front', C.cardTheme); B.fit($('cardPv'));
     $('c3').textContent = `${g.card.length}/${C.cardMax || 300}`;
     $('c1').textContent = `${g.name.length}/${C.nameMax}`; $('c2').textContent = `${g.message.length}/${C.messageMax}`;
     $('designName').textContent = 'Occasion: ' + B.BY_ID[sel].name;

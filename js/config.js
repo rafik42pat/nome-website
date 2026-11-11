@@ -40,6 +40,7 @@ window.NOME_CONFIG = {
   nameMax: 26,
   messageMax: 38,
   cardMax: 300,                     // message card inside the box
+  cardTheme: 'white',               // 'white' (black text) or 'black' (silver text)
 
   /* ANALYTICS — loaded only after the visitor accepts cookies */
   ga4: '',                          // e.g. 'G-XXXXXXXXXX'

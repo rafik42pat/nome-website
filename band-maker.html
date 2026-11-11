@@ -64,7 +64,8 @@ textarea{padding:10px 12px;min-height:110px}
 
 <div class="card">
 <h2>3. Send to the printer</h2>
-<label for="batch">Batch name (printed outside the cut line)<input id="batch"></label>
+<div class="grid"><label for="batch">Batch name (printed outside the cut line)<input id="batch"></label>
+<label for="ctheme">Message card colour<select id="ctheme"><option value="white">White card, black text</option><option value="black">Black card, silver text</option></select></label></div>
 <div class="row">
 <button class="btn" id="pdf" type="button">Download PDF</button>
 <button class="btn line" id="clear" type="button">Clear all</button>
@@ -94,7 +95,7 @@ function render() {
   if (!orders.length) { $('list').innerHTML = '<p class="empty">No bands yet.</p>'; return; }
   $('list').innerHTML = orders.map((o, i) => `<div class="order">
     <div class="pv">${B.bandSVG(o.design, o.line1, o.line2, 'front')}</div>
-    ${o.card ? `<div class="cpv">${B.cardSVG(o.line1, o.card, 'front')}</div>` : ''}
+    ${o.card ? `<div class="cpv">${B.cardSVG(o.line1, o.card, 'front', $('ctheme').value)}</div>` : ''}
     <div class="row" style="justify-content:space-between">
       <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.card ? ' · + card' : ''}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
       <select data-status="${i}" aria-label="Status for ${esc(o.no || '#' + (i + 1))}">${STATUSES.map(s => `<option${(o.status || 'Received') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
@@ -102,6 +103,8 @@ function render() {
     </div></div>`).join('');
   B.fit($('list'));
 }
+try { $('ctheme').value = localStorage.getItem('nome_card_theme') || 'white'; } catch (e) {}
+$('ctheme').addEventListener('change', () => { try { localStorage.setItem('nome_card_theme', $('ctheme').value); } catch (e) {} render(); });
 $('list').addEventListener('change', e => { const s = e.target.closest('[data-status]'); if (!s) return; orders[+s.dataset.status].status = s.value; save(); });
 $('list').addEventListener('click', e => {
   const d = e.target.closest('[data-del]'), u = e.target.closest('[data-up]');
@@ -138,7 +141,7 @@ $('pdf').onclick = async () => {
     await document.fonts.ready;
     let n = 0;
     const list = orders.map((o, i) => ({ ...o, cardName: o.line1, label: `${$('batch').value} · ${o.no || '#' + (i + 1)} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
-    const pdf = await B.exportPDF(list, { fontBase: 'fonts/', dpi: 500, onProgress: p => { $('pdfMsg').textContent = `Making PDF… ${p} of ${total}`; } });
+    const pdf = await B.exportPDF(list, { fontBase: 'fonts/', dpi: 500, cardTheme: $('ctheme').value, onProgress: p => { $('pdfMsg').textContent = `Making PDF… ${p} of ${total}`; } });
     pdf.save(`${$('batch').value.replace(/[^\w\-]+/g, '_')}_${total}_pages.pdf`);
     orders.forEach(o => { if (!o.status || o.status === 'Received') o.status = 'Artwork ready'; }); save(); render();
     $('pdfMsg').textContent = `Done: ${total} page${total > 1 ? 's' : ''} (bands and cards). Send the PDF to the printer, then set the status to "Sent to printer".`;

@@ -192,14 +192,15 @@
     while (out.length && !out[out.length - 1]) out.pop();
     return out;
   }
-  function cardInner(name, message) {
-    const cx = CWB / 2, ink = '#D3D5DA', B = BLEED;
-    let s = `<rect width="${CWB}" height="${CHB}" fill="#121215"/>`;
+  const CARD_THEMES = { white: { bg: '#FFFFFF', ink: '#1A1A1D', name: '#0D0D0F' }, black: { bg: '#121215', ink: '#D3D5DA', name: '#FFFFFF' } };
+  function cardInner(name, message, theme) {
+    const T = CARD_THEMES[theme] || CARD_THEMES.white, cx = CWB / 2, ink = T.ink, B = BLEED;
+    let s = `<rect width="${CWB}" height="${CHB}" fill="${T.bg}"/>`;
     s += `<rect x="${B + 6}" y="${B + 6}" width="${CW - 12}" height="${CH - 12}" fill="none" stroke="${ink}" stroke-width=".25" opacity=".55"/>`;
     s += `<text x="${cx}" y="${B + 17}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="6.2" letter-spacing="1.3" fill="${ink}">NOMĒ</text>`;
     s += `<line x1="${cx - 5}" y1="${B + 21}" x2="${cx + 5}" y2="${B + 21}" stroke="${ink}" stroke-width=".25"/>`;
     let top = B + 25, bottom = B + CH - 12;
-    if (name) { s += `<text x="${cx}" y="${B + 33}" text-anchor="middle" font-family="'NSD', 'ARQ', serif" font-size="7.2" fill="#fff" data-max="110" dir="auto">${esc(name)}</text>`; top = B + 38; }
+    if (name) { s += `<text x="${cx}" y="${B + 33}" text-anchor="middle" font-family="'NSD', 'ARQ', serif" font-size="7.2" fill="${T.name}" data-max="110" dir="auto">${esc(name)}</text>`; top = B + 38; }
     let size = 5.2, lines = wrap(message, size, 112);
     while (size > 2.9 && lines.length * size * 1.45 > bottom - top) { size -= .2; lines = wrap(message, size, 112); }
     const lh = size * 1.45, y0 = top + (bottom - top - lines.length * lh) / 2 + size;
@@ -207,18 +208,18 @@
     s += `<text x="${cx}" y="${B + CH - 9}" text-anchor="middle" font-family="'OS', sans-serif" font-size="2" letter-spacing=".9" fill="${ink}" opacity=".7">DAY &amp; NIGHT COLLECTION</text>`;
     return s;
   }
-  function cardSVG(name, message, mode) {
+  function cardSVG(name, message, mode, theme) {
     const vb = mode === 'full' ? `0 0 ${CWB} ${CHB}` : `${BLEED} ${BLEED} ${CW} ${CH}`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="xMidYMid meet">${cardInner(name, message)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="xMidYMid meet">${cardInner(name, message, theme)}</svg>`;
   }
-  function cardSheetSVG(name, message, label, fontStyle) {
+  function cardSheetSVG(name, message, label, fontStyle, theme) {
     const t0x = SLUG + BLEED, t0y = SLUG + BLEED, t1x = t0x + CW, t1y = t0y + CH;
     let m = '';
     const ln = (a, b, c, d2) => `<line x1="${f2(a)}" y1="${f2(b)}" x2="${f2(c)}" y2="${f2(d2)}" stroke="#000" stroke-width=".2"/>`;
     for (const [x, y, dx, dy] of [[t0x, t0y, -1, -1], [t1x, t0y, 1, -1], [t0x, t1y, -1, 1], [t1x, t1y, 1, 1]]) m += ln(x, y + dy * 4, x, y + dy * 9) + ln(x + dx * 4, y, x + dx * 9, y);
     m += `<text x="${t0x}" y="${SLUG - 4.5}" font-family="'OS', sans-serif" font-size="2.4" fill="#000">${esc(label)}</text>`;
     m += `<text x="${t1x}" y="${CSH - 3}" text-anchor="end" font-family="'OS', sans-serif" font-size="2" fill="#000">Message card · 148 × 105 mm trim · 3 mm bleed · 350 gsm · matte</text>`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${CSW}mm" height="${CSH}mm" viewBox="0 0 ${CSW} ${CSH}">${fontStyle ? `<style>${fontStyle}</style>` : ''}<rect width="${CSW}" height="${CSH}" fill="#fff"/><svg x="${SLUG}" y="${SLUG}" width="${CWB}" height="${CHB}" viewBox="0 0 ${CWB} ${CHB}">${cardInner(name, message)}</svg>${m}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${CSW}mm" height="${CSH}mm" viewBox="0 0 ${CSW} ${CSH}">${fontStyle ? `<style>${fontStyle}</style>` : ''}<rect width="${CSW}" height="${CSH}" fill="#fff"/><svg x="${SLUG}" y="${SLUG}" width="${CWB}" height="${CHB}" viewBox="0 0 ${CWB} ${CHB}">${cardInner(name, message, theme)}</svg>${m}</svg>`;
   }
 
   // shrink any line that is wider than its limit (needs the svg in the DOM)
@@ -270,7 +271,7 @@
         pdf.addImage(canvas.toDataURL('image/jpeg', .94), 'JPEG', 0, 0, SW, SH, undefined, 'FAST');
         if (opts.onProgress) opts.onProgress(page);
         if (o.card) {
-          holder.innerHTML = cardSheetSVG(o.cardName || '', o.card, (o.label || '') + ' · message card', css);
+          holder.innerHTML = cardSheetSVG(o.cardName || '', o.card, (o.label || '') + ' · message card', css, o.cardTheme || opts.cardTheme);
           const ce = holder.firstElementChild; fit(ce);
           const cc = await sheetToCanvas(ce, Math.min(dpi, 400), CSW, CSH);
           pdf.addPage([CSW, CSH], 'landscape');
