@@ -180,7 +180,7 @@
   let mctx;
   function measure(text, font) { mctx = mctx || document.createElement('canvas').getContext('2d'); mctx.font = font; return mctx.measureText(text).width; }
   function wrap(text, size, maxW) {
-    const font = `italic 300 ${size * 10}px NSD, ARQ, serif`, out = [];
+    const font = `italic 400 ${size * 10}px NSD, ARQ, serif`, out = [];
     String(text || '').split(/\r?\n/).forEach(par => {
       let line = '';
       par.split(/\s+/).filter(Boolean).forEach(w => {
@@ -209,28 +209,28 @@
   }
   function cardInner(name, message, theme, sign) {
     const T = CARD_THEMES[theme] || CARD_THEMES.white, cx = CWB / 2, B = BLEED;
-    const it = (y, txt, size, fill, max) => `<text x="${cx}" y="${f2(y)}"${max ? ` data-max="${max}"` : ''} text-anchor="middle" font-family="'NSD', 'ARQ', serif" font-style="italic" font-weight="300" font-size="${f2(size)}" fill="${fill}" dir="auto">${esc(txt)}</text>`;
+    const it = (y, txt, size, fill, max) => `<text x="${cx}" y="${f2(y)}"${max ? ` data-max="${max}"` : ''} text-anchor="middle" font-family="'NSD', 'ARQ', serif" font-style="italic" font-weight="400" font-size="${f2(size)}" fill="${fill}" dir="auto">${esc(txt)}</text>`;
     let s = `<rect width="${CWB}" height="${CHB}" fill="${T.bg}"/>`;
     s += `<rect x="${B + 5}" y="${B + 5}" width="${CW - 10}" height="${CH - 10}" fill="none" stroke="${T.frame}" stroke-width=".3"/>`;
     // waves, bottom right
     const wx = B + CW - 5, wy = B + CH - 5;
     for (let k = 0; k < 3; k++) { const o = k * 3.2; s += `<path d="M${f2(wx - 34 - o)} ${f2(wy)} C ${f2(wx - 20 - o)} ${f2(wy - 4 - o)}, ${f2(wx - 15)} ${f2(wy - 13 - o)}, ${f2(wx)} ${f2(wy - 22 - o)}" fill="none" stroke="${T.frame}" stroke-width=".22"/>`; }
-    s += `<text x="${cx}" y="${B + 17}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="7" letter-spacing="1.5" fill="${T.ink}">NOMĒ</text>`;
+    s += `<text x="${cx}" y="${B + 17}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="7.6" letter-spacing="1.5" fill="${T.ink}">NOMĒ</text>`;
     s += `<line x1="${cx - 4.5}" y1="${B + 23}" x2="${cx + 4.5}" y2="${B + 23}" stroke="${T.ink}" stroke-width=".3"/>`;
     const g = greeting(name), sl = signLines(sign);
-    const areaTop = B + 28, areaBot = B + CH - 10;
-    let size = 5, lines, total;
-    const measureBlock = () => { lines = wrap(message, size, 112); const lh = size * 1.4; total = (g ? 5.2 + 6 : 0) + lines.length * lh + (sl.length ? 5 + 7 + sl.length * 6.2 : 0); };
+    const areaTop = B + 27, areaBot = B + CH - 8;
+    let size = 6.6, lines, total;
+    const measureBlock = () => { lines = wrap(message, size, 112); const lh = size * 1.32; total = (g ? 7 + 6 : 0) + lines.length * lh + (sl.length ? 4 + 6.5 + sl.length * 7.4 : 0); };
     measureBlock();
-    while (size > 3.2 && total > areaBot - areaTop) { size -= .2; measureBlock(); }
-    const lh = size * 1.4;
+    while (size > 3.4 && total > areaBot - areaTop) { size -= .2; measureBlock(); }
+    const lh = size * 1.32;
     let y = areaTop + Math.max(0, (areaBot - areaTop - total) / 2);
-    if (g) { s += it(y + 5.2 * .8, g, 5.2, T.ink, 120); y += 5.2 + 6; }
+    if (g) { s += it(y + 7 * .8, g, 7, T.ink, 124); y += 7 + 6; }
     lines.forEach((l, i) => { s += it(y + size * .8 + i * lh, l, size, T.ink); });
     y += lines.length * lh;
     if (sl.length) {
-      y += 4; s += `<line x1="${cx - 4.5}" y1="${f2(y)}" x2="${cx + 4.5}" y2="${f2(y)}" stroke="${T.ink}" stroke-width=".3"/>`; y += 7;
-      sl.forEach((l, i) => { s += it(y + 4.8 * .8 + i * 6.2, l, 4.8, T.ink, 120); });
+      y += 3.5; s += `<line x1="${cx - 4.5}" y1="${f2(y)}" x2="${cx + 4.5}" y2="${f2(y)}" stroke="${T.ink}" stroke-width=".35"/>`; y += 6.5;
+      sl.forEach((l, i) => { s += it(y + 6.2 * .8 + i * 7.4, l, 6.2, T.ink, 124); });
     }
     return s;
   }
