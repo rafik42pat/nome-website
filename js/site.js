@@ -102,7 +102,7 @@
         return;
       }
       const lines = [kind === 'priority' ? 'Hi NOMĒ, please add me to the Priority List.' : `NOMĒ ${kind} enquiry`];
-      for (const [k, v] of data.entries()) if (typeof v === 'string' && v.trim()) lines.push(`${f.querySelector(`[name="${k}"]`).closest('label').firstChild.textContent.trim()}: ${v}`);
+      for (const [k, v] of data.entries()) if (typeof v === 'string' && v.trim()) { const lb = f.querySelector(`[name="${k}"]`).closest('label'); lines.push(`${lb.dataset.label || lb.firstChild.textContent.trim()}: ${v}`); }
       const hasFile = Array.from(data.values()).some(v => v instanceof File && v.size);
       if (hasFile) lines.push('(I will send our logo in this chat.)');
       window.open(wa(lines.join('\n')), '_blank');
