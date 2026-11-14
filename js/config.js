@@ -9,6 +9,12 @@ window.NOME_CONFIG = {
      'direct'  : NOT BUILT YET. Only switch after the exclusivity agreement has ended and been checked. */
   salesMode: 'preview',
 
+  /* RELEASE STATUS (used in 'preview' mode)
+     'pre'    : before a release opens. Buttons say "Join the Priority List".
+     'closed' : this month's sets are all allocated. Buttons say "Join the Next Release". */
+  release: 'pre',
+  monthlyCap: 2500,                 // shown in the "Exclusivity, by design" text
+
   /* EXCLUSIVE GIFTING PARTNER (used in 'partner' mode) */
   partner: {
     name: '',                       // e.g. 'Floward'

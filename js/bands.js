@@ -93,7 +93,8 @@
     { id: 'mabrook', name: 'Mabrook (Wedding)', bg: '#FAF7F0', ink: '#8E6D33', line: '#B8924A', title: 'ألف مبروك', tf: AR, sub: 'ALF MABROOK', end: 'star',
       pattern: () => path(tile((x, y) => circ(x, y, .38), 5, 5), '#E9DDC3') },
     { id: 'dad', name: 'For Dad', bg: '#2B2E33', ink: '#D2D4D9', line: '#A9ACB3', title: 'For Dad', tf: SERIF, ts: 'italic', sub: '', end: 'diamond',
-      pattern: () => { let d = ''; for (let x = -HH; x < W + HH; x += 2.4) d += `M${f2(x)} 0L${f2(x + HH)} ${HH}`; return `<path d="${d}" stroke="#33373D" stroke-width=".3" fill="none"/>`; } }
+      pattern: () => { let d = ''; for (let x = -HH; x < W + HH; x += 2.4) d += `M${f2(x)} 0L${f2(x + HH)} ${HH}`; return `<path d="${d}" stroke="#33373D" stroke-width=".3" fill="none"/>`; } },
+    { id: 'signature', name: 'NOMĒ Signature', standard: true, bg: '#141417', ink: '#D3D5DA', line: '#8E9198', title: 'NOMĒ', tf: SERIF, ts: 'normal', sub: 'DAY & NIGHT COLLECTION', end: 'diamond' }
   ];
   const BY_ID = Object.fromEntries(DESIGNS.map(d => [d.id, d]));
   const HAS_AR = s => /[؀-ۿ]/.test(s || '');

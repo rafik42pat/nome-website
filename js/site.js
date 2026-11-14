@@ -47,17 +47,23 @@
       }
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
     } else {
-      a.textContent = 'Register your interest';
+      const closed = C.release === 'closed';
+      a.textContent = kind === 'gift' ? (closed ? 'Join the next release with this gift' : 'Join the Priority List with this gift') : (closed ? 'Join the Next Release' : 'Join the Priority List');
       const g = kind === 'gift' ? giftDetails() : null;
-      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nGift: ${g.giftName || 'For Him'}\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`
-                  : 'Hi NOMĒ, please let me know when the Day & Night gift box is available.';
+      const intro = closed ? "Hi NOMĒ, I'd like to join the next release." : "Hi NOMĒ, I'd like to join the Priority List.";
+      const t = g ? (g.presentation === 'standard'
+                  ? `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Standard (NOMĒ Signature band)\nBand: NOMĒ Signature`
+                  : `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Personalised\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`)
+                  : intro;
       a.href = wa(t); a.target = '_blank'; a.rel = 'noopener';
     }
   }
   window.nomeRefreshCTAs = () => $$('[data-cta]').forEach(setCTA);
+  if (C.release === 'closed') $$('[data-priority-link],[data-priority-btn]').forEach(el => { el.textContent = 'Join the Next Release'; });
+  $$('[data-cap]').forEach(el => { if (C.monthlyCap) el.textContent = Number(C.monthlyCap).toLocaleString('en-US'); });
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-cta]'); if (!a) return;
-    nomeTrack(partnerLive ? 'partner_click' : 'register_interest_click', { placement: a.dataset.placement || a.dataset.cta, partner: partnerLive ? C.partner.name : '' });
+    nomeTrack(partnerLive ? 'partner_click' : 'priority_list_click', { placement: a.dataset.placement || a.dataset.cta, partner: partnerLive ? C.partner.name : '' });
   });
 
   /* ---------- text that depends on settings ---------- */
@@ -91,16 +97,16 @@
         try {
           const r = await fetch(C.formEndpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
           if (!r.ok) throw new Error();
-          f.reset(); status.textContent = 'Thank you. We have received your enquiry and will reply within 2 working days.';
+          f.reset(); status.textContent = kind === 'priority' ? 'Thank you. You are on the Priority List and we will let you know when the next release opens.' : 'Thank you. We have received your enquiry and will reply within 2 working days.';
         } catch (err) { status.textContent = 'Sorry, something went wrong. Please message us on WhatsApp instead.'; }
         return;
       }
-      const lines = [`NOMĒ ${kind} enquiry`];
+      const lines = [kind === 'priority' ? 'Hi NOMĒ, please add me to the Priority List.' : `NOMĒ ${kind} enquiry`];
       for (const [k, v] of data.entries()) if (typeof v === 'string' && v.trim()) lines.push(`${f.querySelector(`[name="${k}"]`).closest('label').firstChild.textContent.trim()}: ${v}`);
       const hasFile = Array.from(data.values()).some(v => v instanceof File && v.size);
       if (hasFile) lines.push('(I will send our logo in this chat.)');
       window.open(wa(lines.join('\n')), '_blank');
-      status.textContent = hasFile ? 'WhatsApp has opened with your enquiry. Please attach your logo in the chat.' : 'WhatsApp has opened with your enquiry.';
+      status.textContent = hasFile ? 'WhatsApp has opened with your enquiry. Please attach your logo in the chat.' : kind === 'priority' ? 'WhatsApp has opened. Send the message to join the Priority List.' : 'WhatsApp has opened with your enquiry.';
     });
   });
 
