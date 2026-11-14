@@ -49,7 +49,7 @@
     } else {
       a.textContent = 'Register your interest';
       const g = kind === 'gift' ? giftDetails() : null;
-      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`
+      const t = g ? `Hi NOMĒ, please let me know when the Day & Night gift box is available.\nGift: ${g.giftName || 'For Him'}\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`
                   : 'Hi NOMĒ, please let me know when the Day & Night gift box is available.';
       a.href = wa(t); a.target = '_blank'; a.rel = 'noopener';
     }
@@ -62,6 +62,7 @@
 
   /* ---------- text that depends on settings ---------- */
   $$('[data-rrp]').forEach(el => el.textContent = `${C.currency} ${C.rrp}`);
+  $$('[data-gift-status]').forEach(el => { const t = (C.gifts && C.gifts[el.dataset.giftStatus] || {}).status; el.textContent = t || ''; el.hidden = !t; });
   $$('[data-partner-note]').forEach(el => {
     if (partnerLive) el.textContent = C.partner.passesPersonalisation
       ? `Your chosen band, name, message and card will be sent to ${C.partner.name} with your order.`

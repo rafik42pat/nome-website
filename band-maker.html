@@ -40,13 +40,14 @@ textarea{padding:10px 12px;min-height:110px}
 
 <div class="card">
 <h2>1. Paste a WhatsApp order</h2>
-<label for="paste">Order message<textarea id="paste" placeholder="Band: Eid Mubarak&#10;Name: Ahmed&#10;Message: With love from Sara&#10;From: With love, Your Family&#10;Card: Your full message for the card (always last)"></textarea></label>
+<label for="paste">Order message<textarea id="paste" placeholder="Gift: For Her&#10;Band: Eid Mubarak&#10;Name: Ahmed&#10;Message: With love from Sara&#10;From: With love, Your Family&#10;Card: Your full message for the card (always last)"></textarea></label>
 <div class="row"><button class="btn" id="addPastePdf" type="button">Add and download PDF</button><button class="btn line" id="addPaste" type="button">Add to list only</button><span class="status" id="pasteMsg"></span></div>
 </div>
 
 <div class="card">
 <h2>Or add by hand</h2>
 <div class="grid">
+<label for="gift">Gift (lid sticker)<select id="gift"><option>For Him</option><option>For Her</option><option>For Him &amp; Her</option></select></label>
 <label for="design">Design<select id="design"></select></label>
 <label for="qty">Quantity<input id="qty" type="number" min="1" value="1"></label>
 <label for="l1">Name line<input id="l1" maxlength="26" placeholder="For Ahmed"></label>
@@ -98,7 +99,7 @@ function render() {
     <div class="pv">${B.bandSVG(o.design, o.line1, o.line2, 'front')}</div>
     ${o.card ? `<div class="cpv">${B.cardSVG(o.line1, o.card, 'front', $('ctheme').value, o.sign)}</div>` : ''}
     <div class="row" style="justify-content:space-between">
-      <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.card ? ' · + card' : ''}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
+      <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(o.gift || 'For Him')} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.card ? ' · + card' : ''}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
       <select data-status="${i}" aria-label="Status for ${esc(o.no || '#' + (i + 1))}">${STATUSES.map(s => `<option${(o.status || 'Received') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
       <span class="row"><button class="btn line" data-pdf="${i}" type="button">PDF</button><button class="btn line" data-up="${i}" type="button" aria-label="Move up">↑</button><button class="btn line" data-del="${i}" type="button">Remove</button></span>
     </div></div>`).join('');
@@ -125,14 +126,15 @@ function addFromPaste() {
   if (!d) { $('pasteMsg').textContent = 'Could not find "Band:" in the message.'; return; }
   const clean = v => (v === '-' ? '' : v);
   const cm = t.match(/^\s*Card\s*:\s*([\s\S]*)$/mi), card = cm ? clean(cm[1].trim()).slice(0, 300) : '';
-  orders.push({ no: nextNo(), status: 'Received', design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), sign: clean(get('From')).slice(0, 40), card, qty: 1, ref: '' });
+  const gm = (get('Gift') || '').toLowerCase(), gift = gm.includes('&') || gm.includes('and') ? 'For Him & Her' : gm.includes('her') ? 'For Her' : 'For Him';
+  orders.push({ no: nextNo(), status: 'Received', gift, design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), sign: clean(get('From')).slice(0, 40), card, qty: 1, ref: '' });
   save(); render(); $('paste').value = ''; $('pasteMsg').textContent = 'Added: ' + d.name;
   return orders.length - 1;
 }
 $('addPaste').onclick = () => { addFromPaste(); };
 $('addPastePdf').onclick = () => { const i = addFromPaste(); if (i !== undefined) makePDF([i]); };
 $('addManual').onclick = () => {
-  orders.push({ no: nextNo(), status: 'Received', design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), card: $('card').value.trim(), sign: $('sign').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
+  orders.push({ no: nextNo(), status: 'Received', gift: $('gift').value, design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), card: $('card').value.trim(), sign: $('sign').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
   save(); render(); $('l1').value = $('l2').value = $('ref').value = $('card').value = $('sign').value = ''; $('qty').value = 1;
 };
 $('clear').onclick = () => { if (orders.length && confirmClear()) { orders = []; save(); render(); } };
@@ -145,7 +147,7 @@ async function makePDF(idx) {
   $('pdf').disabled = true; $('pdfMsg').textContent = 'Making PDF…';
   try {
     await document.fonts.ready;
-    const list = sel.map(o => ({ ...o, cardName: o.line1, cardSign: o.sign || '', label: `${$('batch').value} · ${o.no} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
+    const list = sel.map(o => ({ ...o, cardName: o.line1, cardSign: o.sign || '', label: `${$('batch').value} · ${o.no} · ${o.gift || 'For Him'} · ${B.BY_ID[o.design].name} · ${o.line1 || ''}${o.qty > 1 ? ' · ×' + o.qty : ''}` }));
     const pdf = await B.exportPDF(list, { fontBase: 'fonts/', dpi: 500, cardTheme: $('ctheme').value, onProgress: p => { $('pdfMsg').textContent = `Making PDF… ${p} of ${total}`; } });
     const name = sel.length === 1 ? `${sel[0].no}_${(sel[0].line1 || 'order').replace(/[^\w\-]+/g, '_')}` : `${$('batch').value.replace(/[^\w\-]+/g, '_')}_${total}_pages`;
     pdf.save(name + '.pdf');

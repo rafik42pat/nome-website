@@ -18,8 +18,16 @@ window.NOME_CONFIG = {
   },
 
   /* PRICE (shown as recommended retail price) */
-  rrp: 299,
+  rrp: 399,
   currency: 'AED',
+
+  /* THE THREE GIFTS (one box, told apart by the clear lid sticker)
+     status: short note shown on the gift, e.g. 'Coming 2027'. Empty = no note. */
+  gifts: {
+    him:  { name: 'For Him',       sticker: 'FOR HIM',       status: '' },
+    her:  { name: 'For Her',       sticker: 'FOR HER',       status: 'Coming 2027' },
+    both: { name: 'For Him & Her', sticker: 'FOR HIM & HER', status: 'Coming 2027' }
+  },
 
   /* DELIVERY LINE — leave empty until the partner's service is confirmed
      e.g. 'Personalised gifting available with 48-hour delivery in eligible areas.' */
