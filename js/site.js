@@ -48,7 +48,7 @@
   function setCTA(a) {
     const kind = a.dataset.cta;
     if (partnerLive) {
-      a.textContent = kind === 'gift' ? 'Order this gift through our exclusive partner' : 'Shop NOMĒ at our exclusive gifting partner';
+      a.textContent = kind === 'gift' ? 'Order this gift through our gifting partner' : 'Shop NOMĒ at our gifting partner';
       let url = C.partner.url;
       const g = giftDetails();
       if (kind === 'gift' && g && C.partner.passesPersonalisation) {
@@ -56,10 +56,9 @@
       }
       a.href = url; a.target = '_blank'; a.rel = 'noopener';
     } else {
-      const closed = C.release === 'closed';
-      a.textContent = kind === 'gift' ? (closed ? 'Join the next release with this gift' : 'Join the Priority List with this gift') : (closed ? 'Join the Next Release' : 'Join the Priority List');
+      a.textContent = kind === 'gift' ? 'Enquire about this gift' : 'Enquire on WhatsApp';
       const g = kind === 'gift' ? giftDetails() : null;
-      const intro = closed ? "Hi NOMĒ, I'd like to join the next release." : "Hi NOMĒ, I'd like to join the Priority List.";
+      const intro = g ? `Hi NOMĒ, I'm interested in this gift (${C.currency} ${C.rrp}).` : "Hi NOMĒ, I'd like to know more about NOMĒ.";
       const t = g ? (g.presentation === 'standard'
                   ? `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Standard (NOMĒ Signature band)\nBand: NOMĒ Signature`
                   : `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Personalised\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`)
@@ -68,11 +67,9 @@
     }
   }
   window.nomeRefreshCTAs = () => $$('[data-cta]').forEach(setCTA);
-  if (C.release === 'closed') $$('[data-priority-link],[data-priority-btn]').forEach(el => { el.textContent = 'Join the Next Release'; });
-  $$('[data-cap]').forEach(el => { if (C.monthlyCap) el.textContent = Number(C.monthlyCap).toLocaleString('en-US'); });
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-cta]'); if (!a) return;
-    nomeTrack(partnerLive ? 'partner_click' : 'priority_list_click', { placement: a.dataset.placement || a.dataset.cta, partner: partnerLive ? C.partner.name : '' });
+    nomeTrack(partnerLive ? 'partner_click' : 'gift_enquiry_click', { placement: a.dataset.placement || a.dataset.cta, partner: partnerLive ? C.partner.name : '' });
   });
 
   /* ---------- text that depends on settings ---------- */
@@ -82,9 +79,9 @@
     if (partnerLive) el.textContent = C.partner.passesPersonalisation
       ? `Your chosen band, name, message and card will be sent to ${C.partner.name} with your order.`
       : `You'll enter your band choice, name, message and card on ${C.partner.name}'s website when you order.`;
-    else el.textContent = 'NOMĒ is launching soon through our exclusive gifting partner. Register your interest and we will let you know first.';
+    else el.textContent = 'NOMĒ is launching soon in the UAE. Send us your gift details on WhatsApp and we will be in touch.';
   });
-  $$('[data-partner-name]').forEach(el => el.textContent = partnerLive ? C.partner.name : 'our exclusive gifting partner');
+  $$('[data-partner-name]').forEach(el => el.textContent = partnerLive ? C.partner.name : 'our gifting partner');
   $$('[data-partner-logo]').forEach(el => { if (partnerLive && C.partner.logo) { el.src = C.partner.logo; el.alt = C.partner.name; el.hidden = false; } });
   $$('[data-delivery]').forEach(el => { if (C.deliveryNote) { el.textContent = C.deliveryNote; el.hidden = false; } });
   $$('[data-wa]').forEach(a => { a.href = wa(a.dataset.wa || 'Hi NOMĒ'); a.target = '_blank'; a.rel = 'noopener'; });
@@ -101,21 +98,24 @@
       e.preventDefault();
       const kind = f.dataset.enquiry, data = new FormData(f);
       nomeTrack(kind + '_enquiry');
-      if (C.formEndpoint) {
+      const isList = kind === 'updates';
+      if (isList && f.elements.website && f.elements.website.value) return;   // spam trap
+      const endpoint = isList ? C.listEndpoint : C.formEndpoint;
+      if (endpoint) {
         data.append('_subject', `NOMĒ ${kind} enquiry`);
         try {
-          const r = await fetch(C.formEndpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+          const r = await fetch(endpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
           if (!r.ok) throw new Error();
-          f.reset(); status.textContent = kind === 'priority' ? 'Thank you. You are on the Priority List and we will let you know when the next release opens.' : 'Thank you. We have received your enquiry and will reply within 2 working days.';
+          f.reset(); status.textContent = isList ? 'Thank you for signing up. Please check your inbox to confirm your email address.' : 'Thank you. We have received your enquiry and will reply within 2 working days.';
         } catch (err) { status.textContent = 'Sorry, something went wrong. Please message us on WhatsApp instead.'; }
         return;
       }
-      const lines = [kind === 'priority' ? 'Hi NOMĒ, please add me to the Priority List.' : `NOMĒ ${kind} enquiry`];
-      for (const [k, v] of data.entries()) if (typeof v === 'string' && v.trim()) { const lb = f.querySelector(`[name="${k}"]`).closest('label'); lines.push(`${lb.dataset.label || lb.firstChild.textContent.trim()}: ${v}`); }
+      const lines = [isList ? 'Hi NOMĒ, please add me to your mailing list.' : `NOMĒ ${kind} enquiry`];
+      for (const [k, v] of data.entries()) if (typeof v === 'string' && v.trim() && k !== 'website') { const lb = f.querySelector(`[name="${k}"]`).closest('label'); lines.push(`${lb.dataset.label || lb.firstChild.textContent.trim()}: ${v}`); }
       const hasFile = Array.from(data.values()).some(v => v instanceof File && v.size);
       if (hasFile) lines.push('(I will send our logo in this chat.)');
       window.open(wa(lines.join('\n')), '_blank');
-      status.textContent = hasFile ? 'WhatsApp has opened with your enquiry. Please attach your logo in the chat.' : kind === 'priority' ? 'WhatsApp has opened. Send the message to join the Priority List.' : 'WhatsApp has opened with your enquiry.';
+      status.textContent = hasFile ? 'WhatsApp has opened with your enquiry. Please attach your logo in the chat.' : isList ? 'WhatsApp has opened. Send the message and we will add you to our mailing list.' : 'WhatsApp has opened with your enquiry.';
     });
   });
 

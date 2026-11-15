@@ -4,18 +4,12 @@
 window.NOME_CONFIG = {
 
   /* SALES MODE
-     'preview' : no partner signed yet. Buttons say "Register your interest" (WhatsApp). No orders taken.
-     'partner' : exclusive gifting partner live. Buttons go to the partner's NOMĒ page. No orders taken here.
+     'preview' : no partner signed yet. Gift buttons say "Enquire about this gift" (WhatsApp). No orders taken.
+     'partner' : gifting partner live. Buttons go to the partner's NOMĒ page. No orders taken here.
      'direct'  : NOT BUILT YET. Only switch after the exclusivity agreement has ended and been checked. */
   salesMode: 'preview',
 
-  /* RELEASE STATUS (used in 'preview' mode)
-     'pre'    : before a release opens. Buttons say "Join the Priority List".
-     'closed' : this month's sets are all allocated. Buttons say "Join the Next Release". */
-  release: 'pre',
-  monthlyCap: 2500,                 // shown in the "Exclusivity, by design" text
-
-  /* EXCLUSIVE GIFTING PARTNER (used in 'partner' mode) */
+  /* GIFTING PARTNER (used in 'partner' mode) */
   partner: {
     name: '',                       // e.g. 'Floward'
     url: '',                        // the partner's NOMĒ product page
@@ -24,7 +18,7 @@ window.NOME_CONFIG = {
   },
 
   /* PRICE (shown as recommended retail price) */
-  rrp: 399,
+  rrp: 299,
   currency: 'AED',
 
   /* THE THREE GIFTS (one box, told apart by the clear lid sticker)
@@ -48,6 +42,11 @@ window.NOME_CONFIG = {
   /* CORPORATE & PARTNER ENQUIRIES
      formEndpoint: a Formspree (or similar) URL. Empty = enquiries open WhatsApp instead. */
   formEndpoint: '',
+
+  /* MAILING LIST ("Keep Me Updated")
+     listEndpoint: the Brevo (or similar) form URL. Empty = sign-ups open WhatsApp instead,
+     and nothing on the site claims automatic emails. */
+  listEndpoint: '',
   acceptingPartners: false,         // false = /become-a-partner says new partnerships are not being accepted
 
   /* PERSONALISATION LIMITS (fit the band's printing space) */
