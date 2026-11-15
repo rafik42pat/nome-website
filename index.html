@@ -15,7 +15,7 @@
 <meta name="theme-color" content="#0D0D0F">
 <link rel="preload" href="fonts/nsd-300.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/site.css?v=46c6e3c3">
+<link rel="stylesheet" href="css/site.css?v=6771b2e9">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product","name":"NOMĒ Day & Night Collection",
 "description":"Two 100 ml Eau de Parfum fragrances, one for day and one for night, in a premium black gift box with a personalised occasion band and message card. For Him, For Her, or For Him & Her.",
@@ -30,7 +30,8 @@
 <header>
 <nav aria-label="Main">
 <a class="logo" href="./">NOMĒ</a>
-<div class="links">
+<button type="button" class="menu-btn" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu"><span></span><span></span></button>
+<div class="links" id="navLinks">
 <a href="collections">Collections</a>
 <a href="fragrances">Our Fragrances</a>
 <a href="experience">The NOMĒ Experience</a>
@@ -42,12 +43,12 @@
 
 <main>
 <section class="hero-split">
-<div class="hs-img"><img src="images/hero-collection.jpg" alt="The NOMĒ Day and Night Collection: For Him, For Her and For Him and Her boxes, each beside its two fragrances and their ingredients" width="1536" height="2304" fetchpriority="high"></div>
+<div class="hs-img"><picture><source media="(max-width: 760px)" srcset="images/hero-mobile-sets.jpg" width="1482" height="1497"><img src="images/hero-collection.jpg" alt="The NOMĒ Day and Night Collection: For Him, For Her and For Him and Her boxes, each beside its two fragrances and their ingredients" width="1536" height="2304" fetchpriority="high"></picture></div>
 <div class="hero-text">
 <p class="eyebrow">Limited Monthly Release</p>
 <h1>A fragrance for every side of you.</h1>
-<p class="lead" style="font-family:var(--serif);font-size:22px;color:var(--text)">Two distinctive fragrances. One considered collection.</p>
-<p class="lead">Crafted in the UAE, presented with distinction and released in limited monthly quantities.</p>
+<p class="lead hs-sub" style="font-family:var(--serif);font-size:22px;color:var(--text)">Two distinctive fragrances. One considered collection.</p>
+<p class="lead hs-lead">Crafted in the UAE, presented with distinction and released in limited monthly quantities.</p>
 <p class="price-line"><span data-rrp>AED 399</span> <span>·</span> Two 100ml Eau de Parfum</p>
 <div class="row hs-cta" style="gap:14px">
 <a class="btn btn-fill" href="collections">Explore the Collection</a>
@@ -65,6 +66,7 @@
 <p class="body">Every NOMĒ gift holds two 100ml Eau de Parfum fragrances, one for the day and one for the night, presented with distinction.</p>
 <a class="small" href="collections" style="color:var(--metal)">View all collections →</a>
 </div>
+<img class="m-only" src="images/hero-collection.jpg" alt="The NOMĒ Day and Night Collection: For Him, For Her and For Him and Her boxes, each beside its two fragrances" width="1536" height="2304" loading="lazy" style="width:100%;height:auto">
 <div class="gifts">
 <article class="gift">
 <img src="images/gift-him.jpg" alt="NOMĒ For Him gift box, open, with No.1 Black Birch and No.2 Amber Leaf" width="1200" height="800" loading="lazy">
@@ -74,7 +76,7 @@
 <p class="notes">No.1 Black Birch · No.2 Amber Leaf</p>
 <p class="small">2 × 100ml Eau de Parfum · <span data-rrp>AED 399</span></p>
 <span class="tag" data-gift-status="him" hidden></span>
-<a class="btn btn-line" href="#personalise" data-pick-gift="him">Personalise</a>
+<a class="btn btn-line" href="collections#him">Discover the Set</a>
 </div>
 </article>
 <article class="gift">
@@ -85,7 +87,7 @@
 <p class="notes">No.3 Rose Petal · No.4 Saffron Amber</p>
 <p class="small">2 × 100ml Eau de Parfum · <span data-rrp>AED 399</span></p>
 <span class="tag" data-gift-status="her" hidden></span>
-<a class="btn btn-line" href="#personalise" data-pick-gift="her">Personalise</a>
+<a class="btn btn-line" href="collections#her">Discover the Set</a>
 </div>
 </article>
 <article class="gift">
@@ -96,7 +98,7 @@
 <p class="notes">No.2 Amber Leaf · No.4 Saffron Amber</p>
 <p class="small">2 × 100ml Eau de Parfum · <span data-rrp>AED 399</span></p>
 <span class="tag" data-gift-status="both" hidden></span>
-<a class="btn btn-line" href="#personalise" data-pick-gift="both">Personalise</a>
+<a class="btn btn-line" href="collections#both">Discover the Set</a>
 </div>
 </article>
 </div>
@@ -179,35 +181,42 @@
 <h2>Presented your way.</h2>
 <p class="body">Every set arrives in our signature presentation. For a gift, add their name, an occasion band and your message on a card inside, at no extra cost. Preview the complete gift below.</p>
 </div>
-<div class="pers">
+<div class="pers" id="pers" data-step="1">
+<div class="steps m-only" role="tablist" aria-label="Personalisation steps">
+<button type="button" role="tab" data-go="1" aria-selected="true"><b>1</b>Choose Set</button>
+<button type="button" role="tab" data-go="2" aria-selected="false"><b>2</b>Personalise</button>
+<button type="button" role="tab" data-go="3" aria-selected="false"><b>3</b>Preview</button>
+</div>
 <div class="pers-left">
-<div class="stack" style="gap:10px"><p class="eyebrow" style="font-size:12px">Choose the gift</p>
+<div class="stack" data-s="1" style="gap:10px"><p class="eyebrow" style="font-size:12px">Choose the gift</p>
 <div class="seg" id="giftSeg" role="group" aria-label="Gift"><button type="button" data-gift="him" aria-pressed="true">For Him</button><button type="button" data-gift="her" aria-pressed="false">For Her</button><button type="button" data-gift="both" aria-pressed="false">For Him &amp; Her</button></div>
 <p class="hint" id="giftLine"></p></div>
-<div class="stack" style="gap:10px"><p class="eyebrow" style="font-size:12px">Presentation</p>
+<div class="stack" data-s="1" style="gap:10px"><p class="eyebrow" style="font-size:12px">Presentation</p>
 <div class="seg" id="presSeg" role="group" aria-label="Presentation"><button type="button" data-pres="personalised" aria-pressed="true">Personalised</button><button type="button" data-pres="standard" aria-pressed="false">Standard</button></div>
 <p class="hint" id="presLine"></p></div>
-<div class="box" id="boxPreview" role="img" aria-label="Preview of the NOMĒ gift box with the selected band">
+<div class="box" data-s="1 3" id="boxPreview" role="img" aria-label="Preview of the NOMĒ gift box with the selected band">
 <div class="foil" aria-hidden="true"><div class="n">NOMĒ</div><div class="e">EAU DE PARFUM</div><div class="r"></div><div class="d">DAY &amp; NIGHT COLLECTION</div></div>
 <div class="stk" id="boxStk" aria-hidden="true">FOR HIM</div>
 <div class="band-slot" id="boxBand"></div>
 <button type="button" class="enlarge" id="enlargeBtn">Enlarge</button>
 </div>
-<div class="stack" id="persFields" style="gap:22px">
+<div class="stack" id="persFields" data-s="2" style="gap:22px">
 <label for="rname"><span class="lbl"><span>Recipient's name</span><span id="c1"></span></span><input id="rname" autocomplete="off" placeholder="Ahmed" dir="auto"></label>
 <label for="rmsg"><span class="lbl"><span>Your personal message (optional)</span><span id="c2"></span></span><input id="rmsg" autocomplete="off" placeholder="With love, from your family" dir="auto"></label>
 <p class="hint">English or Arabic. Long names shrink to fit the band.</p>
 <label for="rcard"><span class="lbl"><span>Message card inside the box (optional)</span><span id="c3"></span></span><textarea id="rcard" rows="4" placeholder="Wishing you happiness, success and many more special moments." dir="auto"></textarea></label>
 <label for="rsign"><span class="lbl"><span>Card sign-off</span><span id="c4"></span></span><input id="rsign" autocomplete="off" placeholder="With love, Your Family" dir="auto"></label>
 <p class="hint">The card opens with "Dear" and their name, then your message and sign-off.</p>
-<div class="stack" style="gap:8px"><p class="eyebrow" style="font-size:12px">Card preview</p><div class="cardpv" id="cardPv" role="img" aria-label="Preview of the message card"></div></div>
 </div>
-<div class="stack" style="gap:10px">
+<div class="stack" id="cardWrap" data-s="3" style="gap:8px"><p class="eyebrow" style="font-size:12px">Card preview</p><div class="cardpv" id="cardPv" role="img" aria-label="Preview of the message card"></div></div>
+<div class="stepnav m-only" data-s="1 2"><button type="button" class="btn btn-line" data-back hidden>Back</button><button type="button" class="btn btn-fill" data-next>Next: Personalise</button></div>
+<div class="stack" data-s="3" style="gap:10px">
 <a class="btn btn-fill" data-cta="gift" data-placement="personalise" href="#personalise" style="min-height:56px">Register your interest</a>
 <p class="hint" data-partner-note></p>
+<button type="button" class="btn btn-line m-only" data-back>Back</button>
 </div>
 </div>
-<div class="pers-right" id="persRight">
+<div class="pers-right" id="persRight" data-s="2">
 <p class="eyebrow" style="font-size:12px" id="designName">Choose the occasion</p>
 <div class="thumbs" id="thumbs" role="group" aria-label="Band design"></div>
 </div>
@@ -285,9 +294,9 @@
 <div class="legal"><span>© <span data-year>2026</span> NOMĒ. Crafted in the UAE.</span><span><a href="privacy">Privacy policy</a> · <a href="terms">Terms &amp; conditions</a></span></div>
 </div>
 </footer>
-<script src="js/config.js?v=46c6e3c3"></script>
-<script src="js/site.js?v=46c6e3c3"></script>
-<script src="js/bands.js?v=46c6e3c3"></script>
+<script src="js/config.js?v=6771b2e9"></script>
+<script src="js/site.js?v=6771b2e9"></script>
+<script src="js/bands.js?v=6771b2e9"></script>
 <script>
 (function () {
   const B = NOME_BANDS, C = window.NOME_CONFIG, $ = id => document.getElementById(id);
@@ -302,7 +311,7 @@
   function draw() {
     const g = v(), std = pres === 'standard', shownName = std ? '' : (g.name || 'Ahmed'), shownMsg = std ? '' : (g.message || (g.name ? '' : 'With love, from your family'));
     const svg = B.bandSVG(D(), shownName, shownMsg, 'front');
-    $('persFields').hidden = $('persRight').hidden = std;
+    $('persFields').hidden = $('persRight').hidden = $('cardWrap').hidden = std;
     $('presLine').textContent = std ? 'The NOMĒ Signature band, sealed and ready to enjoy or give.' : 'Their name, an occasion band and your message card, included in the price.';
     document.querySelectorAll('#presSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.pres === pres));
     $('boxBand').innerHTML = svg; B.fit($('boxBand'));
@@ -330,7 +339,29 @@
   $('rname').addEventListener('change', () => { if (!completed && $('rname').value.trim()) { completed = true; nomeTrack('personalisation_complete', { design: sel }); } });
   $('enlargeBtn').addEventListener('click', () => { $('bigView').showModal(); draw(); nomeTrack('preview_enlarge', { design: sel }); });
   $('closeBig').addEventListener('click', () => $('bigView').close());
-  draw();
+  /* mobile: three steps (Choose Set, Personalise, Preview). Desktop shows everything at once. */
+  const P = $('pers'), mq = matchMedia('(max-width: 760px)');
+  let step = 1;
+  function go(n, scroll) {
+    if (pres === 'standard' && n === 2) n = step < 2 ? 3 : 1;
+    step = n; P.dataset.step = n;
+    P.querySelectorAll('[data-go]').forEach(b => { b.setAttribute('aria-selected', +b.dataset.go === n); b.disabled = pres === 'standard' && b.dataset.go === '2'; });
+    const nav = P.querySelector('.stepnav');
+    nav.querySelector('[data-back]').hidden = n === 1;
+    nav.querySelector('[data-next]').textContent = n === 1 && pres !== 'standard' ? 'Next: Personalise' : 'Next: Preview';
+    if (n === 3) { draw(); B.fit($('boxBand')); B.fit($('cardPv')); }
+    if (n === 2) B.fit($('thumbs'));
+    if (scroll && mq.matches) P.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (scroll) nomeTrack('personalise_step', { step: n });
+  }
+  P.addEventListener('click', e => {
+    const t = e.target.closest('[data-go],[data-next],[data-back]'); if (!t) return;
+    if (t.dataset.go) go(+t.dataset.go, true);
+    else if (t.hasAttribute('data-next')) go(step + 1, true);
+    else go(pres === 'standard' && step === 3 ? 1 : step - 1, true);
+  });
+  $('presSeg').addEventListener('click', () => go(step));
+  draw(); go(1);
   document.fonts.ready.then(() => { draw(); B.fit($('thumbs')); });
 })();
 </script>

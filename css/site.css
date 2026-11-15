@@ -161,7 +161,7 @@ footer .wrap{padding:56px 32px 40px;display:flex;flex-direction:column;gap:40px}
 form.enq label.check{flex-direction:row;align-items:flex-start;gap:14px;text-transform:none;letter-spacing:0;font-size:15px;line-height:1.55;color:var(--soft);cursor:pointer}
 form.enq label.check input{min-height:0;width:20px;height:20px;padding:0;margin:2px 0 0;flex:0 0 auto;accent-color:var(--metal)}
 html{scroll-padding-top:90px}
-@media (max-width:700px){html{scroll-padding-top:210px}}
+@media (max-width:760px){html{scroll-padding-top:76px}}
 
 /* split hero: collection image + headline */
 .hero-split{border-top:0;padding:0;background:#0A0A0B;display:flex;flex-direction:row-reverse;align-items:center;justify-content:center;gap:clamp(32px,5vw,90px);min-height:min(calc(100vh - 72px),980px);overflow:hidden}
@@ -175,4 +175,87 @@ html{scroll-padding-top:90px}
  .hero-split .hero-text{flex:none;align-items:center;text-align:center;padding:28px 20px 72px;max-width:640px}
  .hero-split .price-line{text-align:center}
  .hero-split .hs-cta{justify-content:center}
+}
+
+/* ================= mobile (760px and below). Desktop untouched. ================= */
+.menu-btn,.m-only,.steps,.stepnav{display:none}
+@media (max-width:760px){
+ .m-only{display:block}
+ .btn.m-only{display:flex}
+ /* compact sticky header with hamburger */
+ header{position:sticky}
+ nav{flex-wrap:nowrap;padding:8px 8px 8px 20px;min-height:60px}
+ .logo{font-size:24px;padding:10px 0}
+ .menu-btn{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;width:48px;height:48px;background:none;border:0;cursor:pointer;padding:0}
+ .menu-btn span{display:block;width:24px;height:1.5px;background:var(--text);transition:transform .25s}
+ header.open .menu-btn span:first-child{transform:translateY(4.25px) rotate(45deg)}
+ header.open .menu-btn span:last-child{transform:translateY(-4.25px) rotate(-45deg)}
+ .links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:#0D0D0F;border-bottom:1px solid var(--line);padding:6px 20px 18px;font-size:13px;max-height:calc(100vh - 60px);overflow:auto}
+ header.open .links{display:flex}
+ .links a{padding:0;min-height:56px;display:flex;align-items:center;border-bottom:1px solid var(--line)}
+ .links a:last-child{border-bottom:0}
+
+ /* hero: headline above a compact product image, then price and CTA */
+ .hero-split{display:flex;flex-direction:column;align-items:stretch;padding:28px 0 52px}
+ .hero-split .hero-text{display:contents}
+ .hero-split .eyebrow{order:1;padding:0 20px;text-align:center;font-size:11px}
+ .hero-split h1{order:2;padding:10px 20px 0;text-align:center;font-size:clamp(34px,10vw,44px)}
+ .hero-split .hs-sub{order:3;padding:12px 20px 0;text-align:center;font-size:18px!important;max-width:none}
+ .hero-split .hs-img{order:4;width:100%;height:auto;min-height:0;aspect-ratio:auto;margin:18px 0 0;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 7%,#000 90%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0,#000 7%,#000 90%,transparent 100%)}
+ .hero-split .hs-img img{height:auto}
+ .hero-split .price-line{order:5;text-align:center;padding:10px 20px 0;font-size:16px}
+ .hero-split .price-line{font-size:13px;letter-spacing:.2em;color:var(--muted)}
+ .hero-split .price-line [data-rrp]{display:block;color:var(--text);font:300 34px/1.1 var(--serif);letter-spacing:.04em;margin-bottom:6px}
+ .hero-split .price-line span:not([data-rrp]){display:none}
+ .hero-split .hs-cta{order:6;flex-direction:column;align-items:stretch;padding:18px 20px 0;gap:10px!important}
+ .hero-split .hs-cta .btn{width:100%;min-height:54px}
+ .hero-split .hs-lead{order:7;padding:22px 24px 0;text-align:center;font-size:15px}
+ .hero-split [data-delivery]{order:8;padding:8px 20px 0;text-align:center}
+
+ /* collection cards */
+ .gift .btn{align-self:stretch}
+ /* fragrance cards: compact two-column grid */
+ #fragrances .cards,.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .card{padding:0;gap:0;flex-direction:column;align-items:stretch;flex-wrap:nowrap}
+ .card img{width:100%;height:auto;aspect-ratio:1/1}
+ .card .txt{padding:14px 14px 16px;gap:6px;flex:1 1 auto}
+ .card .txt .eyebrow{font-size:10px!important;letter-spacing:.2em!important}
+ .card h3{font-size:22px}
+ .card .notes{font-size:14px}
+ .card .txt .body,.card .txt>.small:not(a){display:none}
+ .card .txt a.small{margin-top:auto;min-height:44px;display:flex;align-items:center}
+ .card .tag{font-size:9px;padding:3px 7px}
+
+ /* personaliser: three steps */
+ .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:100%}
+ .steps button{min-height:56px;background:none;border:1px solid var(--line);border-bottom-width:2px;color:var(--muted);font:11px var(--sans);letter-spacing:.12em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:6px 4px}
+ .steps b{font:300 18px var(--serif);letter-spacing:0;color:inherit}
+ .steps button[aria-selected="true"]{color:var(--text);border-color:var(--metal);background:#17171B}
+ .steps button:disabled{opacity:.35;cursor:default}
+ .pers{flex-direction:column;gap:22px}
+ .pers-left{display:contents}
+ .pers-right{width:100%}
+ .pers [data-s]{order:2}
+ .pers #persRight{order:1}
+ .pers .steps{order:0}
+ .pers [data-s="3"],.pers #cardWrap{order:3}
+ .pers .stepnav{order:4}
+ .pers .box{order:2}
+ .pers[data-step="1"] [data-s]:not([data-s~="1"]),
+ .pers[data-step="2"] [data-s]:not([data-s~="2"]),
+ .pers[data-step="3"] [data-s]:not([data-s~="3"]){display:none!important}
+ .stepnav{display:flex;gap:10px;width:100%}
+ .stepnav .btn{flex:1;min-height:54px;padding:0 12px}
+ .pers [data-s="3"] .btn{width:100%}
+ .thumbs{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+ /* touch targets */
+ .btn{min-height:52px}
+ .seg button{min-height:52px;flex:1 1 30%}
+ input,select,textarea{min-height:52px}
+ .faq summary{padding:18px 40px 18px 0;min-height:56px;font-size:19px}
+ .fcol a{min-height:44px;display:flex;align-items:center}
+ .legal a{display:inline-block;padding:10px 0}
+ a.small{display:inline-flex;align-items:center;min-height:44px}
+ form.enq label.check input{width:24px;height:24px}
 }

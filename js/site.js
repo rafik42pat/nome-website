@@ -19,6 +19,15 @@
       fbq('init', C.metaPixel); fbq('track', 'PageView');
     }
   }
+  /* mobile menu */
+  const hdr = document.querySelector('header'), mb = document.querySelector('.menu-btn');
+  if (hdr && mb) {
+    const setMenu = open => { hdr.classList.toggle('open', open); mb.setAttribute('aria-expanded', open); mb.setAttribute('aria-label', open ? 'Close menu' : 'Open menu'); };
+    mb.addEventListener('click', () => setMenu(!hdr.classList.contains('open')));
+    hdr.querySelectorAll('.links a').forEach(a => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+    document.addEventListener('click', e => { if (!hdr.contains(e.target)) setMenu(false); });
+  }
   window.nomeTrack = function (name, params) {
     try { if (window.gtag) gtag('event', name, params || {}); if (window.fbq) fbq('trackCustom', name, params || {}); } catch (e) {}
   };
