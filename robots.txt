@@ -1,4 +1,3 @@
 User-agent: *
 Disallow: /band-maker.html
-Disallow: /become-a-partner
 Sitemap: https://nomeparfum.com/sitemap.xml
