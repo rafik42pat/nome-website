@@ -260,3 +260,9 @@ html{scroll-padding-top:90px}
  form.enq label.check input{width:24px;height:24px}
 }
 .hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+/* scent pyramid */
+.pyramid{margin:4px 0 0;border-top:1px solid var(--line)}
+.pyramid div{display:grid;grid-template-columns:130px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.pyramid dt{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.pyramid dd{margin:0;color:var(--text)}
+@media (max-width:760px){.pyramid div{grid-template-columns:1fr;gap:4px}}
