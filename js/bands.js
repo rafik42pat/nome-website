@@ -109,6 +109,64 @@
     return '';
   }
 
+
+  // ---------- text layout ----------
+  // Sizes in mm. With a name the name is the hero (about 1.8x the occasion title);
+  // without a name the original sizes are kept. Every line is measured with the real
+  // font so Arabic ascenders and dots below never collide, long lines shrink in size
+  // (never stretched), and the whole block scales down if it would not fit the frame.
+  const SIZES = {
+    named:   { title: 4.4, titleAr: 4.6, sub: 1.3, subAr: 2.6, name: 8.0, nameAr: 9.2, msg: 1.75, msgAr: 3.2 },
+    nameless:{ title: 6.6, titleAr: 8.4, sub: 1.55, subAr: 3.8, msg: 1.8, msgAr: 2.9 }
+  };
+  const GAPS = { title: { sub: .7, name: 1.6, msg: 1.4 }, sub: { name: 1.5, msg: 1.3 }, name: { msg: 1.25 } };
+  let bctx;
+  function box(text, cssFont, size, ls) {
+    // returns width / ascent / descent in mm for the given size
+    try {
+      bctx = bctx || document.createElement('canvas').getContext('2d');
+      bctx.font = cssFont.replace('{px}', '100px');
+      const m = bctx.measureText(text), k = size / 100;
+      const w = m.width * k + (ls ? ls * Math.max(0, [...text].length - 1) : 0);
+      return { w, asc: m.actualBoundingBoxAscent * k, desc: Math.max(m.actualBoundingBoxDescent * k, 0) };
+    } catch (e) {
+      const ar = HAS_AR(text);
+      return { w: [...text].length * size * (ar ? .45 : .56), asc: size * (ar ? 1.15 : .78), desc: size * (ar ? .36 : .25) };
+    }
+  }
+  function textBlock(d, cx, ch, line1, line2) {
+    const named = !!(line1 && String(line1).trim());
+    const S = named ? SIZES.named : SIZES.nameless;
+    const L = [];
+    const arTitle = d.tf === AR;
+    L.push({ role: 'title', t: d.title, size: arTitle ? S.titleAr : S.title, fam: d.tf, style: d.ts || 'normal', w: arTitle ? 700 : 300, max: 100, min: .8 });
+    if (d.sub) L.push({ role: 'sub', t: d.sub, size: d.sf ? S.subAr : S.sub, fam: d.sf || SANS, style: 'normal', w: d.sf ? 700 : 600, ls: d.sf ? 0 : .5, max: 90, min: .8 });
+    if (named) { const ar = HAS_AR(line1); L.push({ role: 'name', t: String(line1).trim(), size: ar ? S.nameAr : S.name, fam: ar ? "'ARQ','NSD',serif" : "'NSD','ARQ',serif", style: ar ? 'normal' : 'italic', w: ar ? 700 : 400, max: 104, min: .55 }); }
+    if (line2 && String(line2).trim()) { const ar = HAS_AR(line2), t = String(line2).trim(); L.push({ role: 'msg', t: ar ? t : t.toUpperCase(), size: ar ? S.msgAr : S.msg, fam: ar ? "'ARQ','OS',sans-serif" : "'OS','ARQ',sans-serif", style: 'normal', w: ar ? 700 : 400, ls: ar ? 0 : .38, max: 96, min: .75 }); }
+    if (d.flag) L.forEach(l => { l.size *= .86; l.max *= .92; });
+    const measureAll = () => L.forEach(l => { const css = `${l.style} ${l.w} {px} ${l.fam}`; Object.assign(l, box(l.t, css, l.size, l.ls)); });
+    // 1. width: shrink a line that is too long, down to its minimum
+    L.forEach(l => { l.base = l.size; });
+    measureAll();
+    L.forEach(l => { if (l.w > l.max) l.size = Math.max(l.base * l.min, l.size * l.max / l.w); });
+    measureAll();
+    // 2. height: scale the whole block if it would not fit inside the inner frame
+    const avail = (ch - 2.4) - 3.4;
+    const gapOf = (a, b) => ((GAPS[a.role] || {})[b.role] || 1.2) * (d.flag ? .86 : 1);
+    const height = () => L.reduce((h, l, i) => h + l.asc + l.desc + (i ? gapOf(L[i - 1], l) : 0), 0);
+    let total = height();
+    if (total > avail) { const f = avail / total; L.forEach(l => { l.size *= f; }); measureAll(); total = height(); }
+    // 3. draw, centred on the frame
+    let y = CY - total / 2, out = '';
+    L.forEach((l, i) => {
+      if (i) y += gapOf(L[i - 1], l);
+      const base = y + l.asc;
+      out += `<text x="${f2(cx)}" y="${f2(base)}" text-anchor="middle" font-family="${l.fam.replace(/"/g, "'")}" font-size="${f2(l.size)}" font-style="${l.style}" font-weight="${l.w}" fill="${d.ink}"${l.ls ? ` letter-spacing="${l.ls}"` : ''} data-max="${f2(l.max)}" data-role="${l.role}" direction="${HAS_AR(l.t) ? 'rtl' : 'ltr'}">${esc(l.t)}</text>`;
+      y = base + l.desc;
+    });
+    return out;
+  }
+
   // ---------- one band (full 534 x 46) ----------
   function bandInner(id, line1, line2) {
     const d = BY_ID[id] || DESIGNS[0];
@@ -133,22 +191,8 @@
     if (len) s += path(rect(x0 - 1.2 - len, CY - .15, len, .3) + rect(x1 + 1.2, CY - .15, len, .3), d.line);
     s += ornament(d.end, x0 - 1.2 - len, CY, -1, d.line) + ornament(d.end, x1 + 1.2 + len, CY, 1, d.line);
     if (d.extra) s += d.extra(x0, x1);
-    // text block, vertically centred
-    const k = d.flag ? .86 : 1;
-    const lines = [];
-    const arTitle = d.tf === AR;
-    lines.push({ t: d.title, size: (arTitle ? 8.4 : 6.6) * k, font: d.tf, style: d.ts || 'normal', w: arTitle ? 700 : 300, fill: d.ink, h: (arTitle ? 7.4 : 6.2) * k, asc: (arTitle ? 5.2 : 4.9) * k, max: 100 });
-    if (d.sub) lines.push({ t: d.sub, size: (d.sf ? 3.8 : 1.55) * k, font: d.sf || SANS, style: 'normal', w: d.sf ? 700 : 600, ls: d.sf ? 0 : .5, fill: d.ink, h: (d.sf ? 3.6 : 1.6) * k, asc: (d.sf ? 2.6 : 1.15) * k, max: 90 });
-    if (line1) { const ar = HAS_AR(line1); lines.push({ t: line1, size: (ar ? 4.6 : 4.1) * k, font: ar ? "'ARQ','NSD',serif" : "'NSD','ARQ',serif", style: ar ? 'normal' : 'italic', w: ar ? 700 : 400, fill: d.ink, h: 4.4 * k, asc: 3.1 * k, max: 92, user: 1 }); }
-    if (line2) { const ar = HAS_AR(line2); lines.push({ t: ar ? line2 : line2.toUpperCase(), size: (ar ? 2.9 : 1.8) * k, font: ar ? "'ARQ','OS',sans-serif" : "'OS','ARQ',sans-serif", style: 'normal', w: ar ? 700 : 400, ls: ar ? 0 : .38, fill: d.ink, h: (ar ? 2.9 : 1.9) * k, asc: (ar ? 2.1 : 1.32) * k, max: 92, user: 1 }); }
-    const gap = 1.25 * k;
-    const total = lines.reduce((a, l) => a + l.h, 0) + gap * (lines.length - 1);
-    let top = CY - total / 2;
-    for (const l of lines) {
-      const base = top + l.asc;
-      s += `<text x="${f2(cx)}" y="${f2(base)}" text-anchor="middle" font-family="${l.font.replace(/"/g, "'")}" font-size="${f2(l.size)}" font-style="${l.style}" font-weight="${l.w}" fill="${l.fill}"${l.ls ? ` letter-spacing="${l.ls}"` : ''} data-max="${l.max}" direction="${HAS_AR(l.t) ? 'rtl' : 'ltr'}">${esc(l.t)}</text>`;
-      top += l.h + gap;
-    }
+    // text block, vertically centred inside the inner frame
+    s += textBlock(d, cx, ch, line1, line2);
     s += `</g>`;
     s += `<rect x="0" y="0" width="${f2(FX0)}" height="${HH}" fill="#FFFFFF"/>`;   // glue flap: unprinted
     return s;
