@@ -54,7 +54,7 @@ window.NOME_CONFIG = {
   messageMax: 32,
   cardMax: 300,                     // message card inside the box
   signMax: 40,                      // card sign-off, e.g. 'With love, Your Family'
-  cardTheme: 'white',               // 'white' (black text) or 'black' (silver text)
+  cardTheme: 'match',               // 'white' (black text) or 'black' (silver text)
 
   /* ANALYTICS — loaded only after the visitor accepts cookies */
   ga4: '',                          // e.g. 'G-XXXXXXXXXX'

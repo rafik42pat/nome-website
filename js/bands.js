@@ -321,8 +321,19 @@
     if (t.includes('\n')) return t.split(/\r?\n/).map(x => x.trim()).filter(Boolean).slice(0, 2);
     const i = t.indexOf(','); return i > 0 && i < t.length - 1 ? [t.slice(0, i + 1), t.slice(i + 1).trim()] : [t];
   }
+  // card frame: the band's architecture, scaled for a card
+  function cardFrame(kind, x0, y0, x1, y1, k, attrs) {
+    const P = pts => `<polygon points="${pts.map(p => p.map(f2).join(',')).join(' ')}" ${attrs}/>`;
+    if (kind === 'deco') { const a = 3.6 * k, b = 7.2 * k; return P([[x0 + b, y0], [x1 - b, y0], [x1 - b, y0 + a], [x1 - a, y0 + a], [x1 - a, y0 + b], [x1, y0 + b], [x1, y1 - b], [x1 - a, y1 - b], [x1 - a, y1 - a], [x1 - b, y1 - a], [x1 - b, y1], [x0 + b, y1], [x0 + b, y1 - a], [x0 + a, y1 - a], [x0 + a, y1 - b], [x0, y1 - b], [x0, y0 + b], [x0 + a, y0 + b], [x0 + a, y0 + a], [x0 + b, y0 + a]]); }
+    if (kind === 'notch') { const c = 7 * k; return `<path d="M${f2(x0 + c)} ${f2(y0)}H${f2(x1 - c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x1)} ${f2(y0 + c)}V${f2(y1 - c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x1 - c)} ${f2(y1)}H${f2(x0 + c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x0)} ${f2(y1 - c)}V${f2(y0 + c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x0 + c)} ${f2(y0)}Z" ${attrs}/>`; }
+    if (kind === 'arch' || kind === 'oval') { const r = (kind === 'oval' ? 15 : 9) * k; return `<rect x="${f2(x0)}" y="${f2(y0)}" width="${f2(x1 - x0)}" height="${f2(y1 - y0)}" rx="${f2(r)}" ${attrs}/>`; }
+    const c = 7 * k; return P([[x0 + c, y0], [x1 - c, y0], [x1, y0 + c], [x1, y1 - c], [x1 - c, y1], [x0 + c, y1], [x0, y1 - c], [x0, y0 + c]]);   // hexagon bands: chamfered corners
+  }
   function cardInner(name, message, theme, sign) {
-    const T = CARD_THEMES[theme] || CARD_THEMES.white, cx = CWB / 2, B = BLEED;
+    const cx = CWB / 2, B = BLEED;
+    const md = String(theme || '').startsWith('match:') ? BY_ID[String(theme).slice(6)] : null;
+    if (md) return matchedCard(md, name, message, sign);
+    const T = CARD_THEMES[theme] || CARD_THEMES.white;
     const it = (y, txt, size, fill, max) => `<text x="${cx}" y="${f2(y)}"${max ? ` data-max="${max}"` : ''} text-anchor="middle" font-family="'NSD', 'ARQ', serif" font-style="italic" font-weight="400" font-size="${f2(size)}" fill="${fill}" dir="auto">${esc(txt)}</text>`;
     let s = `<rect width="${CWB}" height="${CHB}" fill="${T.bg}"/>`;
     s += `<rect x="${B + 5}" y="${B + 5}" width="${CW - 10}" height="${CH - 10}" fill="none" stroke="${T.frame}" stroke-width=".3"/>`;
@@ -331,22 +342,35 @@
     for (let k = 0; k < 3; k++) { const o = k * 3.2; s += `<path d="M${f2(wx - 34 - o)} ${f2(wy)} C ${f2(wx - 20 - o)} ${f2(wy - 4 - o)}, ${f2(wx - 15)} ${f2(wy - 13 - o)}, ${f2(wx)} ${f2(wy - 22 - o)}" fill="none" stroke="${T.frame}" stroke-width=".22"/>`; }
     s += `<text x="${cx}" y="${B + 17}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="7.6" letter-spacing="1.5" fill="${T.ink}">NOMĒ</text>`;
     s += `<line x1="${cx - 4.5}" y1="${B + 23}" x2="${cx + 4.5}" y2="${B + 23}" stroke="${T.ink}" stroke-width=".3"/>`;
+    return s + cardText(name, message, sign, T.ink, T.ink, B + 27, B + CH - 8, 112);
+  }
+  function cardText(name, message, sign, ink, rule, areaTop, areaBot, wrapW) {
+    const cx = CWB / 2;
+    const it = (y, txt, size, fill, max) => `<text x="${cx}" y="${f2(y)}"${max ? ` data-max="${max}"` : ''} text-anchor="middle" font-family="'NSD', 'ARQ', serif" font-style="italic" font-weight="400" font-size="${f2(size)}" fill="${fill}" direction="${isArabic(txt) ? 'rtl' : 'ltr'}" unicode-bidi="embed">${esc(txt)}</text>`;
     const g = greeting(name), sl = signLines(sign);
-    const areaTop = B + 27, areaBot = B + CH - 8;
-    let size = 6.6, lines, total;
-    const measureBlock = () => { lines = wrap(message, size, 112); const lh = size * 1.32; total = (g ? 7 + 6 : 0) + lines.length * lh + (sl.length ? 4 + 6.5 + sl.length * 7.4 : 0); };
+    let s = '', size = 6.6, lines, total;
+    const measureBlock = () => { lines = wrap(message, size, wrapW); const lh = size * 1.32; total = (g ? 7 + 6 : 0) + lines.length * lh + (sl.length ? 4 + 6.5 + sl.length * 7.4 : 0); };
     measureBlock();
     while (size > 3.4 && total > areaBot - areaTop) { size -= .2; measureBlock(); }
     const lh = size * 1.32;
     let y = areaTop + Math.max(0, (areaBot - areaTop - total) / 2);
-    if (g) { s += it(y + 7 * .8, g, 7, T.ink, 124); y += 7 + 6; }
-    lines.forEach((l, i) => { s += it(y + size * .8 + i * lh, l, size, T.ink); });
+    if (g) { s += it(y + 7 * .8, g, 7, ink, wrapW + 10); y += 7 + 6; }
+    lines.forEach((l, i) => { s += it(y + size * .8 + i * lh, l, size, ink); });
     y += lines.length * lh;
     if (sl.length) {
-      y += 3.5; s += `<line x1="${cx - 4.5}" y1="${f2(y)}" x2="${cx + 4.5}" y2="${f2(y)}" stroke="${T.ink}" stroke-width=".35"/>`; y += 6.5;
-      sl.forEach((l, i) => { s += it(y + 6.2 * .8 + i * 7.4, l, 6.2, T.ink, 124); });
+      y += 3.5; s += `<line x1="${cx - 4.5}" y1="${f2(y)}" x2="${cx + 4.5}" y2="${f2(y)}" stroke="${rule}" stroke-width=".35"/>`; y += 6.5;
+      sl.forEach((l, i) => { s += it(y + 6.2 * .8 + i * 7.4, l, 6.2, ink, wrapW + 10); });
     }
     return s;
+  }
+  function matchedCard(d, name, message, sign) {
+    const cx = CWB / 2, B = BLEED, bg = d.flag ? '#FFFFFF' : d.bg, ink = d.ink, gold = d.line;
+    let s = `<rect width="${CWB}" height="${CHB}" fill="${bg}"/>`;
+    s += cardFrame(d.frame || 'hex', B + 5, B + 5, B + CW - 5, B + CH - 5, 1, `fill="none" stroke="${gold}" stroke-width=".45"`);
+    s += cardFrame(d.frame || 'hex', B + 6.8, B + 6.8, B + CW - 6.8, B + CH - 6.8, .8, `fill="none" stroke="${gold}" stroke-width=".18"`);
+    s += `<text x="${cx}" y="${B + 18}" text-anchor="middle" font-family="'NSD', serif" font-weight="300" font-size="7.6" letter-spacing="1.5" fill="${gold}">NOMĒ</text>`;
+    s += path(`M${f2(cx - 2.4)} ${B + 23.2}L${f2(cx)} ${B + 21.8}L${f2(cx + 2.4)} ${B + 23.2}L${f2(cx)} ${B + 24.6}Z`, gold) + path(rect(cx - 12, B + 23.05, 8.6, .3) + rect(cx + 3.4, B + 23.05, 8.6, .3), gold);
+    return s + cardText(name, message, sign, ink, gold, B + 29, B + CH - 11, 108);
   }
   function cardSVG(name, message, mode, theme, sign) {
     const vb = mode === 'full' ? `0 0 ${CWB} ${CHB}` : `${BLEED} ${BLEED} ${CW} ${CH}`;
@@ -358,7 +382,7 @@
     const ln = (a, b, c, d2) => `<line x1="${f2(a)}" y1="${f2(b)}" x2="${f2(c)}" y2="${f2(d2)}" stroke="#000" stroke-width=".2"/>`;
     for (const [x, y, dx, dy] of [[t0x, t0y, -1, -1], [t1x, t0y, 1, -1], [t0x, t1y, -1, 1], [t1x, t1y, 1, 1]]) m += ln(x, y + dy * 4, x, y + dy * 9) + ln(x + dx * 4, y, x + dx * 9, y);
     m += `<text x="${t0x}" y="${SLUG - 4.5}" font-family="'OS', sans-serif" font-size="2.2" fill="#000">${esc(label)}</text>`;
-    m += `<text x="${t1x}" y="${CSH - 3}" text-anchor="end" font-family="'OS', sans-serif" font-size="1.9" fill="#000">Message card · 148 × 105 mm (A6 landscape) trim · 3 mm bleed · 350 gsm white · matte</text>`;
+    m += `<text x="${t1x}" y="${CSH - 3}" text-anchor="end" font-family="'OS', sans-serif" font-size="1.9" fill="#000">Message card · 148 × 105 mm (A6 landscape) trim · 3 mm bleed · 350 gsm · matte · full-bleed colour</text>`;
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${CSW}mm" height="${CSH}mm" viewBox="0 0 ${CSW} ${CSH}">${fontStyle ? `<style>${fontStyle}</style>` : ''}<rect width="${CSW}" height="${CSH}" fill="#fff"/><svg x="${SLUG}" y="${SLUG}" width="${CWB}" height="${CHB}" viewBox="0 0 ${CWB} ${CHB}">${cardInner(name, message, theme, sign)}</svg>${m}</svg>`;
   }
 
@@ -411,7 +435,7 @@
         pdf.addImage(canvas.toDataURL('image/jpeg', .94), 'JPEG', 0, 0, SW, SH, undefined, 'FAST');
         if (opts.onProgress) opts.onProgress(page);
         if (o.card) {
-          holder.innerHTML = cardSheetSVG(o.cardName || '', o.card, (o.label || '') + ' · message card', css, o.cardTheme || opts.cardTheme, o.cardSign || '');
+          holder.innerHTML = cardSheetSVG(o.cardName || '', o.card, (o.label || '') + ' · message card', css, ((o.cardTheme || opts.cardTheme) === 'match' ? 'match:' + o.design : (o.cardTheme || opts.cardTheme)), o.cardSign || '');
           const ce = holder.firstElementChild; fit(ce);
           const cc = await sheetToCanvas(ce, Math.min(dpi, 400), CSW, CSH);
           pdf.addPage([CSW, CSH], 'landscape');

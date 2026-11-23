@@ -266,3 +266,6 @@ html{scroll-padding-top:90px}
 .pyramid dt{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);padding-top:3px}
 .pyramid dd{margin:0;color:var(--text)}
 @media (max-width:760px){.pyramid div{grid-template-columns:1fr;gap:4px}}
+
+/* mobile: keep the box logo clear; Enlarge sits in the lower right of the lid, above the band */
+@media (max-width:760px){.enlarge{top:auto;bottom:calc(33.1% + 6px);right:6px;min-height:44px;min-width:44px;width:44px;padding:0;font-size:0;letter-spacing:0;display:flex;align-items:center;justify-content:center}.enlarge::before{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 6V1h5M10 1h5v5M15 10v5h-5M6 15H1v-5' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 6V1h5M10 1h5v5M15 10v5h-5M6 15H1v-5' fill='none' stroke='%23000' stroke-width='1.6'/%3E%3C/svg%3E") center/contain no-repeat}}
