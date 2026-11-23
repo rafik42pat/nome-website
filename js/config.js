@@ -50,8 +50,8 @@ window.NOME_CONFIG = {
   acceptingPartners: false,         // false = /become-a-partner says new partnerships are not being accepted
 
   /* PERSONALISATION LIMITS (fit the band's printing space) */
-  nameMax: 26,
-  messageMax: 38,
+  nameMax: 28,
+  messageMax: 32,
   cardMax: 300,                     // message card inside the box
   signMax: 40,                      // card sign-off, e.g. 'With love, Your Family'
   cardTheme: 'white',               // 'white' (black text) or 'black' (silver text)

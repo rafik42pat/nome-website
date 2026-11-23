@@ -61,7 +61,7 @@
       const intro = g ? `Hi NOMĒ, I'm interested in this gift (${C.currency} ${C.rrp}).` : "Hi NOMĒ, I'd like to know more about NOMĒ.";
       const t = g ? (g.presentation === 'standard'
                   ? `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Standard (NOMĒ Signature band)\nBand: NOMĒ Signature`
-                  : `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Personalised\nBand: ${g.designName}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`)
+                  : `${intro}\nGift: ${g.giftName || 'For Him'}\nPresentation: Personalised\nBand: ${g.designName}${g.header ? '\nHeader: ' + g.header : ''}\nName: ${g.name || '-'}\nMessage: ${g.message || '-'}\nFrom: ${g.sign || '-'}\nCard: ${g.card || '-'}`)
                   : intro;
       a.href = wa(t); a.target = '_blank'; a.rel = 'noopener';
     }

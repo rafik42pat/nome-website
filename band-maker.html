@@ -50,8 +50,9 @@ textarea{padding:10px 12px;min-height:110px}
 <label for="gift">Gift (lid sticker)<select id="gift"><option>For Him</option><option>For Her</option><option>For Him &amp; Her</option></select></label>
 <label for="design">Design<select id="design"></select></label>
 <label for="qty">Quantity<input id="qty" type="number" min="1" value="1"></label>
-<label for="l1">Name line<input id="l1" maxlength="26" placeholder="For Ahmed"></label>
-<label for="l2">Message<input id="l2" maxlength="38" placeholder="With love from Sara"></label>
+<label for="hdr" id="hdrWrap">Header (premium bands)<select id="hdr"></select></label>
+<label for="l1">Name line<input id="l1" maxlength="28" placeholder="For Ahmed"></label>
+<label for="l2">Message<input id="l2" maxlength="32" placeholder="With love from Sara"></label>
 <label for="card" style="grid-column:1/-1">Message card (inside the box, optional)<textarea id="card" maxlength="300" placeholder="Full message for the A6 card"></textarea></label>
 <label for="sign" style="grid-column:1/-1">Card sign-off<input id="sign" maxlength="40" placeholder="With love, Your Family"></label>
 <label for="ref">Order ref / customer (not printed on the band)<input id="ref" placeholder="e.g. Sara, 0501234567"></label>
@@ -79,11 +80,14 @@ textarea{padding:10px 12px;min-height:110px}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="js/bands.js?v=f4c41040"></script>
+<script src="js/bands.js?v=d293e654"></script>
 <script>
 const B = NOME_BANDS, $ = id => document.getElementById(id);
 document.getElementById('fontfaces').textContent = B.fontCSS('fonts/');
 $('design').innerHTML = B.DESIGNS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+$('hdr').innerHTML = B.HEADERS.map(h => `<option value="${h.id}">${h.en} · ${h.ar}</option>`).join('');
+const syncHdr = () => { const d = B.BY_ID[$('design').value]; $('hdrWrap').hidden = !d.premium; if (d.premium) $('hdr').value = d.header || 'foryou'; };
+$('design').addEventListener('change', syncHdr); syncHdr();
 const today = new Date().toISOString().slice(0, 10);
 $('batch').value = 'NOMĒ ' + today;
 const STATUSES = ['Received', 'Artwork ready', 'Sent to printer', 'Printed', 'Completed'];
@@ -96,10 +100,10 @@ const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 function render() {
   if (!orders.length) { $('list').innerHTML = '<p class="empty">No bands yet.</p>'; return; }
   $('list').innerHTML = orders.map((o, i) => `<div class="order">
-    <div class="pv">${B.bandSVG(o.design, o.line1, o.line2, 'front')}</div>
+    <div class="pv">${B.bandSVG(o.design, o.line1, o.line2, 'front', o.header)}</div>
     ${o.card ? `<div class="cpv">${B.cardSVG(o.line1, o.card, 'front', $('ctheme').value, o.sign)}</div>` : ''}
     <div class="row" style="justify-content:space-between">
-      <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(o.gift || 'For Him')} · ${esc(B.BY_ID[o.design].name)}</b> × ${o.qty}${o.card ? ' · + card' : ''}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
+      <span class="meta"><b>${esc(o.no || ('#' + (i + 1)))} · ${esc(o.gift || 'For Him')} · ${esc(B.BY_ID[o.design].name)}${o.header ? ' · ' + esc((B.HEADERS.find(h => h.id === o.header) || {}).en || '') : ''}</b> × ${o.qty}${o.card ? ' · + card' : ''}${o.ref ? ' · ' + esc(o.ref) : ''}</span>
       <select data-status="${i}" aria-label="Status for ${esc(o.no || '#' + (i + 1))}">${STATUSES.map(s => `<option${(o.status || 'Received') === s ? ' selected' : ''}>${s}</option>`).join('')}</select>
       <span class="row"><button class="btn line" data-pdf="${i}" type="button">PDF</button><button class="btn line" data-up="${i}" type="button" aria-label="Move up">↑</button><button class="btn line" data-del="${i}" type="button">Remove</button></span>
     </div></div>`).join('');
@@ -127,14 +131,14 @@ function addFromPaste() {
   const clean = v => (v === '-' ? '' : v);
   const cm = t.match(/^\s*Card\s*:\s*([\s\S]*)$/mi), card = cm ? clean(cm[1].trim()).slice(0, 300) : '';
   const gm = (get('Gift') || '').toLowerCase(), gift = gm.includes('&') || gm.includes('and') ? 'For Him & Her' : gm.includes('her') ? 'For Her' : 'For Him';
-  orders.push({ no: nextNo(), status: 'Received', gift, design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), sign: clean(get('From')).slice(0, 40), card, qty: 1, ref: '' });
+  orders.push({ no: nextNo(), status: 'Received', gift, design: d.id, line1: clean(get('Name')), line2: clean(get('Message')), header: B.headerFor(get('Header')), sign: clean(get('From')).slice(0, 40), card, qty: 1, ref: '' });
   save(); render(); $('paste').value = ''; $('pasteMsg').textContent = 'Added: ' + d.name;
   return orders.length - 1;
 }
 $('addPaste').onclick = () => { addFromPaste(); };
 $('addPastePdf').onclick = () => { const i = addFromPaste(); if (i !== undefined) makePDF([i]); };
 $('addManual').onclick = () => {
-  orders.push({ no: nextNo(), status: 'Received', gift: $('gift').value, design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), card: $('card').value.trim(), sign: $('sign').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
+  orders.push({ no: nextNo(), status: 'Received', gift: $('gift').value, design: $('design').value, line1: $('l1').value.trim(), line2: $('l2').value.trim(), header: B.BY_ID[$('design').value].premium ? $('hdr').value : '', card: $('card').value.trim(), sign: $('sign').value.trim(), qty: Math.max(1, +$('qty').value || 1), ref: $('ref').value.trim() });
   save(); render(); $('l1').value = $('l2').value = $('ref').value = $('card').value = $('sign').value = ''; $('qty').value = 1;
 };
 $('clear').onclick = () => { if (orders.length && confirmClear()) { orders = []; save(); render(); } };

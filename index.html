@@ -15,7 +15,7 @@
 <meta name="theme-color" content="#0D0D0F">
 <link rel="preload" href="fonts/nsd-300.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/site.css?v=f4c41040">
+<link rel="stylesheet" href="css/site.css?v=d293e654">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"Product","name":"NOMĒ Day & Night Collection",
 "description":"Two 100 ml Eau de Parfum fragrances, thoughtfully paired and presented in the NOMĒ signature gift box, with complimentary personalisation. For Him, For Her, or For Him & Her. AED 299.",
@@ -211,9 +211,10 @@
 <button type="button" class="enlarge" id="enlargeBtn">Enlarge</button>
 </div>
 <div class="stack" id="persFields" data-s="2" style="gap:22px">
+<label for="rhead" id="rheadWrap" hidden><span class="lbl"><span>Band header</span><span></span></span><select id="rhead"></select></label>
 <label for="rname"><span class="lbl"><span>Recipient's name</span><span id="c1"></span></span><input id="rname" autocomplete="off" placeholder="Ahmed" dir="auto"></label>
 <label for="rmsg"><span class="lbl"><span>Message on the band (optional)</span><span id="c2"></span></span><input id="rmsg" autocomplete="off" placeholder="With love, from your family" dir="auto"></label>
-<p class="hint">English or Arabic. Long names shrink to fit the band.</p>
+<p class="hint">English or Arabic. Long or couple names wrap neatly onto two lines.</p>
 <label for="rcard"><span class="lbl"><span>Message card inside the box (optional)</span><span id="c3"></span></span><textarea id="rcard" rows="4" placeholder="Wishing you happiness, success and many more special moments." dir="auto"></textarea></label>
 <label for="rsign"><span class="lbl"><span>Card sign-off</span><span id="c4"></span></span><input id="rsign" autocomplete="off" placeholder="With love, Your Family" dir="auto"></label>
 <p class="hint">The card opens with "Dear" and their name, then your message and sign-off.</p>
@@ -229,6 +230,9 @@
 <div class="pers-right" id="persRight" data-s="2">
 <p class="eyebrow" style="font-size:12px" id="designName">Choose the occasion</p>
 <div class="thumbs" id="thumbs" role="group" aria-label="Band design"></div>
+<p class="eyebrow" style="font-size:12px;margin-top:18px">Premium designs</p>
+<p class="hint" style="margin-top:-6px">Timeless bands with your choice of header, in English or Arabic to match the name.</p>
+<div class="thumbs" id="thumbsP" role="group" aria-label="Premium band design"></div>
 </div>
 </div>
 </div>
@@ -305,9 +309,9 @@
 <div class="legal"><span>© <span data-year>2026</span> NOMĒ. Crafted in the UAE.</span><span><a href="privacy">Privacy policy</a> · <a href="terms">Terms &amp; conditions</a></span></div>
 </div>
 </footer>
-<script src="js/config.js?v=f4c41040"></script>
-<script src="js/site.js?v=f4c41040"></script>
-<script src="js/bands.js?v=f4c41040"></script>
+<script src="js/config.js?v=d293e654"></script>
+<script src="js/site.js?v=d293e654"></script>
+<script src="js/bands.js?v=d293e654"></script>
 <script>
 (function () {
   const B = NOME_BANDS, C = window.NOME_CONFIG, $ = id => document.getElementById(id);
@@ -318,10 +322,15 @@
   const G = k => (C.gifts && C.gifts[k]) || { name: k, sticker: k.toUpperCase() };
   const v = () => ({ name: $('rname').value.trim(), message: $('rmsg').value.trim(), card: $('rcard').value.trim(), sign: $('rsign').value.trim() });
   const D = () => pres === 'standard' ? 'signature' : sel;
-  window.nomeGift = () => ({ gift, giftName: G(gift).name, presentation: pres, design: D(), designName: B.BY_ID[D()].name, ...(pres === 'standard' ? { name: '', message: '', card: '', sign: '' } : v()) });
+  $('rhead').innerHTML = B.HEADERS.map(h => `<option value="${h.id}">${h.en} · ${h.ar}</option>`).join('');
+  const isPrem = () => !!(B.BY_ID[D()] || {}).premium;
+  const H = () => isPrem() ? $('rhead').value : '';
+  const headerText = () => { if (!isPrem()) return ''; const h = B.HEADERS.find(x => x.id === H()); return /[؀-ۿ]/.test($('rname').value) ? h.ar : h.en; };
+  window.nomeGift = () => ({ gift, giftName: G(gift).name, presentation: pres, design: D(), designName: B.BY_ID[D()].name, header: headerText(), ...(pres === 'standard' ? { name: '', message: '', card: '', sign: '' } : v()) });
   function draw() {
     const g = v(), std = pres === 'standard', shownName = std ? '' : (g.name || 'Ahmed'), shownMsg = std ? '' : (g.message || (g.name ? '' : 'With love, from your family'));
-    const svg = B.bandSVG(D(), shownName, shownMsg, 'front');
+    const svg = B.bandSVG(D(), shownName, shownMsg, 'front', H());
+    $('rheadWrap').hidden = !isPrem() || std;
     $('persFields').hidden = $('persRight').hidden = $('cardWrap').hidden = std;
     $('presLine').textContent = std ? 'The NOMĒ Signature band, sealed and ready to enjoy or give.' : 'Their name, an occasion band and your message card, included in the price.';
     document.querySelectorAll('#presSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.pres === pres));
@@ -330,18 +339,22 @@
     $('cardPv').innerHTML = B.cardSVG(g.name || 'Ahmed', g.card || 'Wishing you happiness, success and many more special moments.', 'front', C.cardTheme, g.card ? g.sign : (g.sign || 'With love, Your Family')); B.fit($('cardPv'));
     $('c3').textContent = `${g.card.length}/${C.cardMax || 300}`; $('c4').textContent = `${g.sign.length}/${C.signMax || 40}`;
     $('c1').textContent = `${g.name.length}/${C.nameMax}`; $('c2').textContent = `${g.message.length}/${C.messageMax}`;
-    $('designName').textContent = 'Occasion: ' + B.BY_ID[sel].name;
+    $('designName').textContent = (B.BY_ID[sel].premium ? 'Premium: ' : 'Occasion: ') + B.BY_ID[sel].name;
     $('boxStk').textContent = $('bigStk').textContent = G(gift).sticker;
     $('giftLine').textContent = GL[gift] + (G(gift).status ? ' · ' + G(gift).status : '');
     document.querySelectorAll('#giftSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.gift === gift));
     document.querySelectorAll('.thumb').forEach(t => t.setAttribute('aria-pressed', t.dataset.id === sel));
     window.nomeRefreshCTAs && nomeRefreshCTAs();
   }
-  $('thumbs').innerHTML = B.DESIGNS.filter(d => !d.standard).map(d => `<button type="button" class="thumb" data-id="${d.id}" aria-pressed="false"><span class="tb">${B.bandSVG(d.id, '', '', 'front')}</span>${d.name}</button>`).join('');
+  const thumb = d => `<button type="button" class="thumb" data-id="${d.id}" aria-pressed="false"><span class="tb">${B.bandSVG(d.id, '', '', 'front')}</span>${d.name}</button>`;
+  $('thumbs').innerHTML = B.DESIGNS.filter(d => !d.standard && !d.premium).map(thumb).join('');
+  $('thumbsP').innerHTML = B.DESIGNS.filter(d => d.premium).map(thumb).join('');
+  $('rhead').addEventListener('change', () => { nomeTrack('band_header_select', { header: $('rhead').value }); draw(); });
   const pickGift = k => { gift = k; nomeTrack('gift_select', { gift: k }); draw(); };
   $('presSeg').addEventListener('click', e => { const b = e.target.closest('[data-pres]'); if (b) { pres = b.dataset.pres; nomeTrack('presentation_select', { presentation: pres }); draw(); } });
   $('giftSeg').addEventListener('click', e => { const b = e.target.closest('[data-gift]'); if (b) pickGift(b.dataset.gift); });
   document.querySelectorAll('[data-pick-gift]').forEach(a => a.addEventListener('click', () => pickGift(a.dataset.pickGift)));
+  $('thumbsP').addEventListener('click', e => { const t = e.target.closest('.thumb'); if (!t) return; sel = t.dataset.id; $('rhead').value = B.BY_ID[sel].header || 'foryou'; nomeTrack('band_design_select', { design: sel }); draw(); });
   $('thumbs').addEventListener('click', e => { const t = e.target.closest('.thumb'); if (!t) return; sel = t.dataset.id; nomeTrack('band_design_select', { design: sel }); draw(); });
   ['rname', 'rmsg', 'rcard', 'rsign'].forEach(id => $(id).addEventListener('input', () => {
     if (!started) { started = true; nomeTrack('personalisation_start', { design: sel }); }
@@ -361,7 +374,7 @@
     nav.querySelector('[data-back]').hidden = n === 1;
     nav.querySelector('[data-next]').textContent = n === 1 && pres !== 'standard' ? 'Next: Personalise' : 'Next: Preview';
     if (n === 3) { draw(); B.fit($('boxBand')); B.fit($('cardPv')); }
-    if (n === 2) B.fit($('thumbs'));
+    if (n === 2) { B.fit($('thumbs')); B.fit($('thumbsP')); }
     if (scroll && mq.matches) P.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (scroll) nomeTrack('personalise_step', { step: n });
   }
@@ -373,7 +386,7 @@
   });
   $('presSeg').addEventListener('click', () => go(step));
   draw(); go(1);
-  document.fonts.ready.then(() => { draw(); B.fit($('thumbs')); });
+  document.fonts.ready.then(() => { draw(); B.fit($('thumbs')); B.fit($('thumbsP')); });
 })();
 </script>
 </body>

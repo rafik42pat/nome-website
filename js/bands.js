@@ -94,9 +94,36 @@
       pattern: () => path(tile((x, y) => circ(x, y, .38), 5, 5), '#E9DDC3') },
     { id: 'dad', name: 'For Dad', bg: '#2B2E33', ink: '#D2D4D9', line: '#A9ACB3', title: 'For Dad', tf: SERIF, ts: 'italic', sub: '', end: 'diamond',
       pattern: () => { let d = ''; for (let x = -HH; x < W + HH; x += 2.4) d += `M${f2(x)} 0L${f2(x + HH)} ${HH}`; return `<path d="${d}" stroke="#33373D" stroke-width=".3" fill="none"/>`; } },
+    // ----- premium collection: own frame shapes, richer patterns, optional monogram -----
+    { id: 'deco', name: 'Art Deco Noir', premium: true, bg: '#0E0E10', ink: '#E2C98C', line: GOLD, header: 'foryou', title: 'For You', tf: SERIF, ts: 'italic', sub: '', end: 'diamond', frame: 'deco', cw: 128,
+      pattern: () => { let d = ''; for (let x = -4; x < W + 12; x += 9) for (const yb of [BLEED + 4, BLEED + H - 4]) { const up = yb > CY ? -1 : 1; for (const r of [1.6, 3, 4.4]) d += `M${f2(x - r)} ${f2(yb)}A${r} ${r} 0 0 ${up > 0 ? 0 : 1} ${f2(x + r)} ${f2(yb)}`; } return `<path d="${d}" stroke="#3A3222" stroke-width=".28" fill="none"/>` + path(rect(0, BLEED + 6.2, W, .18) + rect(0, BLEED + H - 6.38, W, .18), '#4A3F2A'); } },
+    { id: 'arabesque', name: 'Ivory Arabesque', premium: true, bg: '#F5EFE3', ink: '#7E5E28', line: '#B8924A', header: 'gift', light: true, title: 'A Gift for You', tf: SERIF, ts: 'italic', sub: '', end: 'star', frame: 'arch', cw: 126,
+      pattern: () => `<path d="${tile((x, y) => star(x, y, 3.1, 8, .72) + star(x, y, 1.5, 8, .72, Math.PI / 8), 9, 8.2)}" stroke="#E3D5B8" stroke-width=".26" fill="none"/>` },
+    { id: 'champagne', name: 'Champagne Monogram', premium: true, bg: '#E8DCC4', ink: '#2E2416', line: '#9C7A45', header: 'especially', light: true, title: 'Especially for You', tf: SERIF, ts: 'italic', sub: '', end: 'sparkle', frame: 'notch', mono: '#D9CAAA', cw: 130,
+      pattern: () => { let d = ''; for (let x = -HH; x < W + HH; x += 1.6) d += `M${f2(x)} ${HH}L${f2(x + HH)} 0`; return `<path d="${d}" stroke="#DED0B4" stroke-width=".22" fill="none"/>`; } },
+    { id: 'emerald', name: 'Emerald Lattice', premium: true, bg: '#0D3A2D', ink: GOLDI, line: GOLD, header: 'wishes', title: 'With Best Wishes', tf: SERIF, ts: 'italic', sub: '', end: 'diamond', frame: 'deco', cw: 128,
+      pattern: () => { let d = '', dots = ''; for (let x = -HH; x < W + HH; x += 4) { d += `M${f2(x)} 0L${f2(x + HH)} ${HH}M${f2(x)} ${HH}L${f2(x + HH)} 0`; } for (let x = 0; x < W; x += 4) for (let y = 2; y < HH; y += 4) dots += circ(x, y, .22); return `<path d="${d}" stroke="#145240" stroke-width=".22" fill="none"/>` + path(dots, '#2F6B4F'); } },
+    { id: 'rosegold', name: 'Rose Gold Pearl', premium: true, bg: '#F2E1DB', ink: '#8E4E58', line: '#B9787F', header: 'foryou', light: true, title: 'For You', tf: SERIF, ts: 'italic', sub: '', end: 'sparkle', frame: 'oval', cw: 120, ch: 29,
+      pattern: (x0, x1) => path(scatter((r, x, y) => circ(x, y, .35 + r() * .75), 420, [[0, x0 - 4], [x1 + 4, W]], 21), '#FBF3F0', 'stroke="#D7A9AE" stroke-width=".12"') },
+    { id: 'midnight', name: 'Midnight Monogram', premium: true, bg: '#121A33', ink: '#D9DCE3', line: '#A9AFBD', header: 'madefor', title: 'Made for You', tf: SERIF, ts: 'italic', sub: '', end: 'diamond', frame: 'notch', mono: '#1D2849', cw: 130,
+      pattern: () => path(tile((x, y) => `M${f2(x - .9)} ${f2(y)}L${f2(x)} ${f2(y - .55)}L${f2(x + .9)} ${f2(y)}L${f2(x)} ${f2(y + .55)}Z`, 6, 5), '#1C2547') },
     { id: 'signature', name: 'NOMĒ Signature', standard: true, bg: '#141417', ink: '#D3D5DA', line: '#8E9198', title: 'NOMĒ', tf: SERIF, ts: 'normal', sub: 'DAY & NIGHT COLLECTION', end: 'diamond' }
   ];
   const BY_ID = Object.fromEntries(DESIGNS.map(d => [d.id, d]));
+  // the five curated headers for premium bands; the language follows the recipient's name
+  const HEADERS = [
+    { id: 'foryou', en: 'For You', ar: 'إليك' },
+    { id: 'especially', en: 'Especially for You', ar: 'خصيصًا لك' },
+    { id: 'wishes', en: 'With Best Wishes', ar: 'مع أطيب التمنيات' },
+    { id: 'madefor', en: 'Made for You', ar: 'صُنع لأجلك' },
+    { id: 'gift', en: 'A Gift for You', ar: 'هدية لك' }
+  ];
+  const HEADER_BY = Object.fromEntries(HEADERS.map(h => [h.id, h]));
+  function headerFor(text) {   // match an order's "Header:" line (English or Arabic) to a header id
+    const t = String(text || '').trim().toLowerCase(); if (!t) return '';
+    const h = HEADERS.find(h => h.id === t || h.en.toLowerCase() === t || h.ar === t || t.startsWith(h.en.toLowerCase()));
+    return h ? h.id : '';
+  }
   const HAS_AR = s => /[؀-ۿ]/.test(s || '');
   const esc = s => String(s || '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -119,7 +146,14 @@
     named:   { title: 4.4, titleAr: 4.6, sub: 1.3, subAr: 2.6, name: 8.0, nameAr: 9.2, msg: 1.75, msgAr: 3.2 },
     nameless:{ title: 6.6, titleAr: 8.4, sub: 1.55, subAr: 3.8, msg: 1.8, msgAr: 2.9 }
   };
-  const GAPS = { title: { sub: .7, name: 1.6, msg: 1.4 }, sub: { name: 1.5, msg: 1.3 }, name: { msg: 1.25 } };
+  const GAPS = { title: { sub: .7, name: 1.6, msg: 1.4 }, sub: { name: 1.5, msg: 1.3 }, name: { msg: 1.25, name2: 1.6 }, name2: { msg: 1.7 } };
+  // split a name for two lines: before "&" / "and" / Arabic "و", otherwise at the space nearest the middle
+  function splitName(t) {
+    const words = String(t).trim().split(/\s+/); if (words.length < 2) return null;
+    let i = words.findIndex((w, k) => k > 0 && (w === '&' || /^and$/i.test(w) || (/^و/.test(w) && HAS_AR(w) && w.length > 1 && k === words.length - 1)));
+    if (i < 1) { let best = 1, diff = 1e9; for (let k = 1; k < words.length; k++) { const d = Math.abs(words.slice(0, k).join(' ').length - words.slice(k).join(' ').length); if (d < diff) { diff = d; best = k; } } i = best; }
+    return [words.slice(0, i).join(' '), words.slice(i).join(' ')];
+  }
   let bctx;
   function box(text, cssFont, size, ls) {
     // returns width / ascent / descent in mm for the given size
@@ -142,12 +176,28 @@
     L.push({ role: 'title', t: d.title, size: arTitle ? S.titleAr : S.title, fam: d.tf, style: d.ts || 'normal', w: arTitle ? 700 : 300, max: 100, min: .8 });
     if (d.sub) L.push({ role: 'sub', t: d.sub, size: d.sf ? S.subAr : S.sub, fam: d.sf || SANS, style: 'normal', w: d.sf ? 700 : 600, ls: d.sf ? 0 : .5, max: 90, min: .8 });
     if (named) { const ar = HAS_AR(line1); L.push({ role: 'name', t: String(line1).trim(), size: ar ? S.nameAr : S.name, fam: ar ? "'ARQ','NSD',serif" : "'NSD','ARQ',serif", style: ar ? 'normal' : 'italic', w: ar ? 700 : 400, max: 104, min: .55 }); }
-    if (line2 && String(line2).trim()) { const ar = HAS_AR(line2), t = String(line2).trim(); L.push({ role: 'msg', t: ar ? t : t.toUpperCase(), size: ar ? S.msgAr : S.msg, fam: ar ? "'ARQ','OS',sans-serif" : "'OS','ARQ',sans-serif", style: 'normal', w: ar ? 700 : 400, ls: ar ? 0 : .38, max: 96, min: .75 }); }
+    if (line2 && String(line2).trim()) {
+      const ar = HAS_AR(line2), t = String(line2).trim();
+      // premium bands print the dedication about 1.25 pt larger; light grounds also get a heavier weight
+      const up = d.premium ? .45 : 0, heavy = d.premium && d.light && !ar;
+      L.push({ role: 'msg', t: ar ? t : t.toUpperCase(), size: (ar ? S.msgAr : S.msg) + up, fam: ar ? "'ARQ','OS',sans-serif" : "'OS','ARQ',sans-serif", style: 'normal', w: ar ? 700 : (heavy ? 600 : 400), ls: ar ? 0 : (heavy ? .34 : .38), max: 96, min: .75 });
+    }
     if (d.flag) L.forEach(l => { l.size *= .86; l.max *= .92; });
     const measureAll = () => L.forEach(l => { const css = `${l.style} ${l.w} {px} ${l.fam}`; Object.assign(l, box(l.t, css, l.size, l.ls)); });
     // 1. width: shrink a line that is too long, down to its minimum
     L.forEach(l => { l.base = l.size; });
     measureAll();
+    // long or couple names wrap onto two balanced lines instead of shrinking
+    const ni = L.findIndex(l => l.role === 'name');
+    if (ni >= 0) {
+      const n = L[ni], parts = splitName(n.t), ar = HAS_AR(n.t);
+      const couple = !ar && /\s(&|and)\s/i.test(n.t) && n.t.length >= 12;
+      if (parts && (couple || n.w > n.max)) {
+        const a = Object.assign({}, n, { t: parts[0], role: 'name' }), b = Object.assign({}, n, { t: parts[1], role: 'name2' });
+        L.splice(ni, 1, a, b); measureAll();
+        const k = Math.min(1, a.max / a.w, b.max / b.w); a.size *= k; b.size *= k; a.base = b.base = a.size; measureAll();
+      }
+    }
     L.forEach(l => { if (l.w > l.max) l.size = Math.max(l.base * l.min, l.size * l.max / l.w); });
     measureAll();
     // 2. height: scale the whole block if it would not fit inside the inner frame
@@ -167,9 +217,22 @@
     return out;
   }
 
+  function frameShape(kind, cx, cy, w, h, attrs) {
+    const x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - h / 2, y1 = cy + h / 2, P = (pts) => `<polygon points="${pts.map(p => p.map(f2).join(',')).join(' ')}" ${attrs}/>`;
+    if (kind === 'deco') { const a = h * .13, b = h * .26; return P([[x0 + b, y0], [x1 - b, y0], [x1 - b, y0 + a], [x1 - a, y0 + a], [x1 - a, y0 + b], [x1, y0 + b], [x1, y1 - b], [x1 - a, y1 - b], [x1 - a, y1 - a], [x1 - b, y1 - a], [x1 - b, y1], [x0 + b, y1], [x0 + b, y1 - a], [x0 + a, y1 - a], [x0 + a, y1 - b], [x0, y1 - b], [x0, y0 + b], [x0 + a, y0 + b], [x0 + a, y0 + a], [x0 + b, y0 + a]]); }
+    if (kind === 'arch') { const r = h / 2; return `<path d="M${f2(x0 + r)} ${f2(y0)}H${f2(x1 - r)}A${f2(r)} ${f2(r)} 0 0 1 ${f2(x1 - r)} ${f2(y1)}H${f2(x0 + r)}A${f2(r)} ${f2(r)} 0 0 1 ${f2(x0 + r)} ${f2(y0)}Z" ${attrs}/>`; }
+    if (kind === 'oval') return `<ellipse cx="${f2(cx)}" cy="${f2(cy)}" rx="${f2(w / 2)}" ry="${f2(h / 2)}" ${attrs}/>`;
+    if (kind === 'notch') { const c = h * .24; return `<path d="M${f2(x0 + c)} ${f2(y0)}H${f2(x1 - c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x1)} ${f2(y0 + c)}V${f2(y1 - c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x1 - c)} ${f2(y1)}H${f2(x0 + c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x0)} ${f2(y1 - c)}V${f2(y0 + c)}A${f2(c)} ${f2(c)} 0 0 0 ${f2(x0 + c)} ${f2(y0)}Z" ${attrs}/>`; }
+    return `<polygon points="${hexPts(cx, cy, w, h)}" ${attrs}/>`;
+  }
+
   // ---------- one band (full 534 x 46) ----------
-  function bandInner(id, line1, line2) {
-    const d = BY_ID[id] || DESIGNS[0];
+  function bandInner(id, line1, line2, header) {
+    let d = BY_ID[id] || DESIGNS[0];
+    if (d.premium) {   // one-language header: English for an English name, Arabic for an Arabic name
+      const h = HEADER_BY[header] || HEADER_BY[d.header] || HEADERS[0], ar = HAS_AR(line1);
+      d = Object.assign({}, d, ar ? { title: h.ar, tf: AR, ts: 'normal' } : { title: h.en, tf: SERIF, ts: 'italic' });
+    }
     const cx = d.cx || CX, cw = d.cw || 132, ch = d.ch || 28;
     const x0 = cx - cw / 2, x1 = cx + cw / 2;
     const clip = 'nb' + (++uid);
@@ -183,9 +246,15 @@
       if (d.pattern) s += d.pattern(x0, x1);
       s += borders(d.line);
     }
-    // cartouche
-    s += `<polygon points="${hexPts(cx, CY, cw, ch)}" fill="${d.flag ? '#FFFFFF' : d.bg}" stroke="${d.line}" stroke-width=".4"/>`;
-    s += `<polygon points="${hexPts(cx, CY, cw - 3.4, ch - 2.4)}" fill="none" stroke="${d.line}" stroke-width=".16"/>`;
+    // cartouche (frame shape per design; hexagon by default)
+    s += frameShape(d.frame, cx, CY, cw, ch, `fill="${d.flag ? '#FFFFFF' : d.bg}" stroke="${d.line}" stroke-width=".4"`);
+    s += frameShape(d.frame, cx, CY, cw - 3.4, ch - 2.4, `fill="none" stroke="${d.line}" stroke-width=".16"`);
+    // monogram: the recipient's initial, large and tonal, behind the text
+    if (d.mono && line1 && String(line1).trim()) {
+      const n = String(line1).trim().replace(/^(for|dr\.?|mr\.?|mrs\.?|ms\.?)\s+/i, ''), ch0 = [...n][0] || '';
+      const ar = HAS_AR(ch0);
+      if (!ar) s += `<text x="${f2(cx)}" y="${f2(CY + (ar ? 6 : 9))}" text-anchor="middle" font-family="${ar ? "'ARQ',serif" : "'NSD',serif"}" font-style="${ar ? 'normal' : 'italic'}" font-weight="${ar ? 700 : 300}" font-size="${ar ? 22 : 30}" fill="${d.mono}">${esc(ar ? ch0 : ch0.toUpperCase())}</text>`;
+    }
     // tip rules + ornaments
     const len = d.tip === 0 ? 0 : 14;
     if (len) s += path(rect(x0 - 1.2 - len, CY - .15, len, .3) + rect(x1 + 1.2, CY - .15, len, .3), d.line);
@@ -198,15 +267,15 @@
     return s;
   }
 
-  function bandSVG(id, line1, line2, mode) {
+  function bandSVG(id, line1, line2, mode, header) {
     // mode 'front' = front panel only (trim), 'full' = whole band with bleed
     const vb = mode === 'front' ? `${FX0} ${BLEED} 210 ${H}` : (mode && mode.startsWith('vb:')) ? mode.slice(3) : `0 0 ${W} ${HH}`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${esc((BY_ID[id] || DESIGNS[0]).name)} band">${bandInner(id, line1, line2)}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${esc((BY_ID[id] || DESIGNS[0]).name)} band">${bandInner(id, line1, line2, header)}</svg>`;
   }
 
   // print sheet: 10 mm slug around the bleed, crop marks + fold marks + job label
   const SLUG = 10, SW = W + 2 * SLUG, SH = HH + 2 * SLUG;
-  function sheetSVG(id, line1, line2, label, fontStyle) {
+  function sheetSVG(id, line1, line2, label, fontStyle, header) {
     const t0x = SLUG + BLEED, t0y = SLUG + BLEED, t1x = t0x + L, t1y = t0y + H;
     let m = '';
     const ln = (a, b, c, d2) => `<line x1="${f2(a)}" y1="${f2(b)}" x2="${f2(c)}" y2="${f2(d2)}" stroke="#000" stroke-width=".2"/>`;
@@ -216,7 +285,7 @@
     for (const f of FOLDS) { const x = t0x + f; m += `<line x1="${x}" y1="${t0y - 9}" x2="${x}" y2="${t0y - 4}" stroke="#000" stroke-width=".2" stroke-dasharray="1 .6"/><line x1="${x}" y1="${t1y + 4}" x2="${x}" y2="${t1y + 9}" stroke="#000" stroke-width=".2" stroke-dasharray="1 .6"/>`; }
     m += `<text x="${t0x + 30}" y="${SLUG - 4.5}" font-family="'OS', sans-serif" font-size="2.6" fill="#000">${esc(label)}</text>`;
     m += `<text x="${t1x - 2}" y="${SLUG - 4.5}" text-anchor="end" font-family="'OS', sans-serif" font-size="2.2" fill="#000">528 × 40 mm trim · 3 mm bleed · 300 gsm · matte lamination · dashed marks = fold/score · white flap = glue</text>`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${SW}mm" height="${SH}mm" viewBox="0 0 ${SW} ${SH}">${fontStyle ? `<style>${fontStyle}</style>` : ''}<rect width="${SW}" height="${SH}" fill="#fff"/><svg x="${SLUG}" y="${SLUG}" width="${W}" height="${HH}" viewBox="0 0 ${W} ${HH}">${bandInner(id, line1, line2)}</svg>${m}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${SW}mm" height="${SH}mm" viewBox="0 0 ${SW} ${SH}">${fontStyle ? `<style>${fontStyle}</style>` : ''}<rect width="${SW}" height="${SH}" fill="#fff"/><svg x="${SLUG}" y="${SLUG}" width="${W}" height="${HH}" viewBox="0 0 ${W} ${HH}">${bandInner(id, line1, line2, header)}</svg>${m}</svg>`;
   }
 
 
@@ -335,7 +404,7 @@
     let page = 0;
     for (const o of orders) {
       for (let q = 0; q < (o.qty || 1); q++) {
-        holder.innerHTML = sheetSVG(o.design, o.line1, o.line2, o.label || '', css);
+        holder.innerHTML = sheetSVG(o.design, o.line1, o.line2, o.label || '', css, o.header);
         const el = holder.firstElementChild; fit(el);
         const canvas = await sheetToCanvas(el, dpi);
         if (page++) pdf.addPage([SW, SH], 'landscape');
@@ -354,5 +423,5 @@
     return pdf;
   }
 
-  window.NOME_BANDS = { DESIGNS, BY_ID, bandSVG, sheetSVG, cardSVG, fit, fontCSS, exportPDF, SHEET_MM: [SW, SH], CARD_MM: [CW, CH], greeting };
+  window.NOME_BANDS = { DESIGNS, BY_ID, HEADERS, headerFor, bandSVG, sheetSVG, cardSVG, fit, fontCSS, exportPDF, SHEET_MM: [SW, SH], CARD_MM: [CW, CH], greeting };
 })();
